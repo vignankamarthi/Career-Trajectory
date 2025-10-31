@@ -106,6 +106,22 @@ CREATE TABLE IF NOT EXISTS save_history (
     timestamp TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Research tasks table (async research tracking)
+CREATE TABLE IF NOT EXISTS research_tasks (
+    id TEXT PRIMARY KEY, -- task_id from ParallelMCP
+    block_id TEXT NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
+    block_title TEXT NOT NULL,
+    query TEXT NOT NULL,
+    processor TEXT NOT NULL CHECK (processor IN ('lite', 'base', 'pro', 'ultra', 'ultra2x', 'ultra4x', 'ultra8x')),
+    research_type TEXT NOT NULL CHECK (research_type IN ('university', 'career', 'skills', 'timeline', 'quick')),
+    estimated_time INTEGER NOT NULL, -- in seconds
+    status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'complete', 'error')),
+    results TEXT, -- JSON results from research agent
+    error TEXT, -- Error message if failed
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    completed_at TEXT
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_layers_timeline ON layers(timeline_id);
 CREATE INDEX IF NOT EXISTS idx_blocks_layer ON blocks(layer_id);
@@ -114,3 +130,6 @@ CREATE INDEX IF NOT EXISTS idx_conversations_timeline ON conversations(timeline_
 CREATE INDEX IF NOT EXISTS idx_agent_contexts_timeline ON agent_contexts(timeline_id);
 CREATE INDEX IF NOT EXISTS idx_save_history_timeline ON save_history(timeline_id);
 CREATE INDEX IF NOT EXISTS idx_save_history_timestamp ON save_history(timestamp);
+CREATE INDEX IF NOT EXISTS idx_research_tasks_block ON research_tasks(block_id);
+CREATE INDEX IF NOT EXISTS idx_research_tasks_status ON research_tasks(status);
+CREATE INDEX IF NOT EXISTS idx_research_tasks_created ON research_tasks(created_at);
