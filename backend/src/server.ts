@@ -1,14 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import http from 'http';
 import Logger from './utils/logger';
 import { testConstraints } from './database/db';
+import { initializeWebSocketServer } from './websocket/research-websocket';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const server = http.createServer(app);
 
 // Middleware
 app.use(cors());
@@ -75,8 +78,12 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
+// Initialize WebSocket server
+const wsServer = initializeWebSocketServer(server);
+Logger.info('WebSocket server initialized', { path: '/ws' });
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   Logger.info(`Server started on port ${PORT}`, {
     environment: process.env.NODE_ENV || 'development',
     nodeVersion: process.version,
@@ -93,18 +100,23 @@ app.listen(PORT, () => {
   // Log cost summary on startup (should be zero)
   Logger.logCostSummary();
 
-  Logger.info('Server ready to accept requests');
+  Logger.info('Server ready to accept requests', {
+    http: `http://localhost:${PORT}`,
+    websocket: `ws://localhost:${PORT}/ws`
+  });
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   Logger.info('SIGTERM received, shutting down gracefully');
+  wsServer.close();
   Logger.logCostSummary();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   Logger.info('SIGINT received, shutting down gracefully');
+  wsServer.close();
   Logger.logCostSummary();
   process.exit(0);
 });

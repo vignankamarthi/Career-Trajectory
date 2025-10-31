@@ -1,6 +1,6 @@
 # REFACTOR PLAN - Recovery to NEXT_GEN_ARCHITECTURE
 
-## 🎯 **CURRENT POINTER**: Phase 1 COMPLETE - Ready for Phase 2 Implementation (awaiting user check-in)
+## 🎯 **CURRENT POINTER**: Phase 2 IN PROGRESS - Backend WebSocket infrastructure setup
 
 ---
 
@@ -84,18 +84,20 @@
 - ✅ Deleted AGENT_ARCHITECTURE.md (old 4-agent synchronous system)
 - ✅ Renamed NEXT_GEN_ARCHITECTURE.md → CURRENT_AGENT_ARCHITECTURE.md (new async target)
 
-### **PHASE 2: IMPLEMENTATION** ⏳ PENDING
+### **PHASE 2: IMPLEMENTATION** 🔄 IN PROGRESS
 
-#### Backend Refactor (Detailed steps TBD after Phase 1 approval)
-- [ ] Async Research Infrastructure
-  - [ ] ParallelMCPService implementation
-  - [ ] Task queue system (Redis/BullMQ)
-  - [ ] WebSocket server setup
+**Status**: Building async research infrastructure + Chain of Agents pattern
+
+#### Backend Refactor (IN PROGRESS)
+- 🔄 Async Research Infrastructure
+  - ✅ ParallelMCPService implementation (background research tasks)
+  - ✅ Task queue system (in-memory with cleanup)
+  - ✅ WebSocket server setup (ws://localhost:3001/ws)
   - [ ] Database schema updates for task tracking
-- [ ] Chain of Agents Pattern
-  - [ ] ChainCoordinator implementation
-  - [ ] Agent async task spawning
-  - [ ] Background research execution
+- ✅ Chain of Agents Pattern
+  - ✅ ChainCoordinator implementation (agent orchestration)
+  - ✅ Agent async task spawning (background tasks)
+  - ✅ Background research execution (via ParallelMCP)
 - [ ] API Updates
   - [ ] WebSocket endpoints for research updates
   - [ ] Task status endpoints
