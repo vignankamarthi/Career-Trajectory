@@ -1,6 +1,6 @@
 # REFACTOR PLAN - Recovery to NEXT_GEN_ARCHITECTURE
 
-## 🎯 **CURRENT POINTER**: Phase 2 IN PROGRESS - Backend WebSocket infrastructure setup
+## 🎯 **CURRENT POINTER**: Backend Validation Checkpoint - AWAITING USER MANUAL TEST at http://localhost:3001/api/test/websocket
 
 ---
 
@@ -103,7 +103,38 @@
   - [ ] Task status endpoints
   - [ ] Updated agent orchestration flow
 
-#### Frontend Refactor (Detailed steps TBD after Phase 1 approval)
+#### Backend Validation Checkpoint 🔄 IN PROGRESS
+**Critical Infrastructure Testing Before Frontend Development**
+
+**Rationale**: Validate WebSocket + async research infrastructure works before building frontend. Prevents debugging nightmares and ensures solid foundation.
+
+**Testing Steps**:
+- ✅ Start backend server (verify WebSocket initialization) **COMPLETE**
+- 🔄 **MANUAL TEST REQUIRED** - Access http://localhost:3001/api/test/websocket in browser
+- [ ] Click "1. Connect WebSocket" button → Should see "✅ WebSocket CONNECTED!"
+- [ ] Click "2. Trigger Test Research" button → Should create task
+- [ ] Verify WebSocket broadcasts research_started (watch log)
+- [ ] Verify research executes in background (wait ~5-60s for LITE processor)
+- [ ] Verify WebSocket broadcasts research_complete (watch log)
+- [ ] Check task status tracking (logs show task progression)
+- [ ] Verify graceful error handling (test endpoint handles errors)
+
+**Current Status**: Server running at http://localhost:3001
+- ✅ WebSocket server: ws://localhost:3001/ws
+- ✅ Test page: http://localhost:3001/api/test/websocket
+- ✅ Backend infrastructure ready for testing
+
+**SUCCESS CRITERIA**: All 8 tests pass → Proceed to frontend with confidence
+
+**If Issues Found**: Debug and fix infrastructure before frontend work
+
+---
+
+## 🧪 **USER ACTION REQUIRED**:
+**Open http://localhost:3001/api/test/websocket in your browser and run the manual tests above!**
+This validates the entire async research + WebSocket flow works correctly before we build the frontend.
+
+#### Frontend Refactor (Starts after Backend Validation passes)
 - [ ] Real-Time Notifications
   - [ ] WebSocket client integration
   - [ ] ResearchNotification component

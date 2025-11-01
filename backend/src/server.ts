@@ -56,6 +56,7 @@ import blocksRouter from './routes/blocks';
 import chatRouter from './routes/chat';
 import saveRouter from './routes/save';
 import analyzeRouter from './routes/analyze';
+import testResearchRouter from './routes/test-research';
 
 app.use('/api/configure-with-context', configureWithContextRouter);
 app.use('/api/timelines', timelinesRouter);
@@ -63,6 +64,7 @@ app.use('/api/blocks', blocksRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/save', saveRouter);
 app.use('/api/analyze', analyzeRouter);
+app.use('/api/test', testResearchRouter);
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
