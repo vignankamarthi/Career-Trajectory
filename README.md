@@ -10,13 +10,15 @@
 
 ---
 
-## Production-Ready AI Career Planning Platform
+## Production-Ready AI Career Planning Platform with Async Architecture
 
 Transform career confusion into a personalized, actionable roadmap. Built with enterprise-grade architecture, comprehensive testing, and full observability.
 
 ### Why This Project Stands Out
 
 - **95% Confidence Architecture**: AI agents must reach 95%+ confidence before proceeding
+- **Async Research + WebSocket**: Background research with real-time UI updates (v2.0 NEW)
+- **Visual Feedback System**: Pulsing blue dots, green glow animations, toast notifications (v2.0 NEW)
 - **Research Integration**: Optional deep research via Parallel AI (9 tiers: lite → ultra8x)
 - **Full Observability**: LangSmith tracing for every AI operation
 - **Modern UI/UX**: Beautiful dark mode, responsive design, smooth animations
@@ -39,6 +41,13 @@ Layer 3: Granular tasks (weekly objectives)
 - Confidence-driven conversation flow
 - Real-time validation and error correction
 
+### Real-Time Research Updates (v2.0 NEW)
+- WebSocket-powered live updates (ws://localhost:3001/ws)
+- Pulsing blue dots on blocks being researched
+- Green glow animation when research completes
+- Toast notifications for research events
+- Non-blocking UI - edit while research runs in background
+
 ### LLM Export Functionality
 - One-click export to plain text format
 - Perfect for ChatGPT, Claude, Grok, and other LLMs
@@ -54,9 +63,9 @@ Layer 3: Granular tasks (weekly objectives)
 
 ---
 
-## Architecture Overview
+## Architecture Overview (v2.0 - Async + WebSocket)
 
-### Four-Agent System
+### Four-Agent System with Async Research
 
 ```mermaid
 graph LR

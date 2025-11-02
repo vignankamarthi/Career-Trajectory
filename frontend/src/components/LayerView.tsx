@@ -5,13 +5,15 @@ interface LayerViewProps {
   layerNumber: number;
   blocks: Block[];
   onBlockClick: (block: Block) => void;
+  researchingBlocks: Set<string>;
+  completedBlocks: Set<string>;
 }
 
 /**
  * Displays all blocks in a layer as a horizontal timeline
- * Dark mode support + responsive layout
+ * Dark mode support + responsive layout + async research indicators
  */
-function LayerView({ layerNumber, blocks, onBlockClick }: LayerViewProps) {
+function LayerView({ layerNumber, blocks, onBlockClick, researchingBlocks, completedBlocks }: LayerViewProps) {
   // Time bin labels for visual indication
   const timeBinLabel = {
     1: '4-10 years per block',
@@ -43,6 +45,8 @@ function LayerView({ layerNumber, blocks, onBlockClick }: LayerViewProps) {
               key={block.id}
               block={block}
               onClick={() => onBlockClick(block)}
+              isResearching={researchingBlocks.has(block.id)}
+              isResearchComplete={completedBlocks.has(block.id)}
             />
           ))}
         </div>

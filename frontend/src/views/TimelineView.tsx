@@ -16,9 +16,11 @@ import BlockEditor from '../components/BlockEditor';
 interface TimelineViewProps {
   timelineId: string;
   onResetTimeline: () => void;
+  researchingBlocks: Set<string>;
+  completedBlocks: Set<string>;
 }
 
-function TimelineView({ timelineId, onResetTimeline }: TimelineViewProps) {
+function TimelineView({ timelineId, onResetTimeline, researchingBlocks, completedBlocks }: TimelineViewProps) {
   const queryClient = useQueryClient();
   const [showChat, setShowChat] = useState(false);
   const [showSaveMenu, setShowSaveMenu] = useState(false);
@@ -252,6 +254,8 @@ function TimelineView({ timelineId, onResetTimeline }: TimelineViewProps) {
                     layerNumber={layer.layer_number}
                     blocks={layer.blocks}
                     onBlockClick={setSelectedBlock}
+                    researchingBlocks={researchingBlocks}
+                    completedBlocks={completedBlocks}
                   />
                 </div>
               );

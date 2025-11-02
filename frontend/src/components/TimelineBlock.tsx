@@ -3,15 +3,19 @@ import { Block } from '../lib/api';
 interface TimelineBlockProps {
   block: Block;
   onClick: () => void;
+  isResearching?: boolean;
+  isResearchComplete?: boolean;
 }
 
 /**
- * Individual block visualization with BUBBLE HOVER EFFECT
+ * Individual block visualization with BUBBLE HOVER EFFECT + ASYNC RESEARCH INDICATORS
  * - Color-coded by status
  * - Dark mode support
  * - Zoom/scale on hover (fancy bubble effect)
+ * - Pulsing blue dot when research in progress
+ * - Green glow animation when research completes
  */
-function TimelineBlock({ block, onClick }: TimelineBlockProps) {
+function TimelineBlock({ block, onClick, isResearching = false, isResearchComplete = false }: TimelineBlockProps) {
   // Status colors with dark mode variants
   const statusColors = {
     not_started: 'bg-neutral-200 dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300',
@@ -24,11 +28,20 @@ function TimelineBlock({ block, onClick }: TimelineBlockProps) {
   // Calculate width based on duration (relative)
   const widthClass = block.duration_years >= 5 ? 'min-w-64' : 'min-w-48';
 
+  // Add green border when research complete
+  const researchBorder = isResearchComplete ? 'border-green-500 dark:border-green-400' : '';
+
+  // Add green glow animation when research completes
+  const researchGlow = isResearchComplete ? 'animate-glow-green' : '';
+
   return (
     <button
       onClick={onClick}
       className={`
-        ${widthClass} px-4 py-3 rounded-xl border-2 ${colorClass}
+        relative
+        ${widthClass} px-4 py-3 rounded-xl border-2
+        ${isResearchComplete ? researchBorder : colorClass}
+        ${researchGlow}
         text-left flex flex-col gap-1
         transition-all duration-300 ease-out
         hover:shadow-2xl hover:scale-110 hover:z-10
@@ -36,6 +49,11 @@ function TimelineBlock({ block, onClick }: TimelineBlockProps) {
         cursor-pointer
       `}
     >
+      {/* Pulsing blue dot for researching */}
+      {isResearching && (
+        <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 rounded-full animate-pulse-dot shadow-lg" />
+      )}
+
       <div className="font-semibold text-sm text-center">{block.title}</div>
       <div className="text-xs opacity-75 text-left">
         Age {block.start_age} - {block.end_age}
