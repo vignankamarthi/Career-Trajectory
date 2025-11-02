@@ -32,7 +32,10 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Development docs (not for production)
 CLAUDE.md
+REFACTOR.md
 
 # Uploads
 uploads/*
