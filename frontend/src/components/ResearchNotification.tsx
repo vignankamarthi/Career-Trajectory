@@ -31,15 +31,15 @@ export function ResearchNotification({ update, onDismiss }: Props) {
   const getIcon = () => {
     switch (update.type) {
       case 'research_started':
-        return '🔍';
+        return 'STARTED';
       case 'research_progress':
-        return '⏳';
+        return 'PROGRESS';
       case 'research_complete':
-        return '✅';
+        return 'COMPLETE';
       case 'research_error':
-        return '❌';
+        return 'ERROR';
       default:
-        return '📡';
+        return 'UPDATE';
     }
   };
 

@@ -124,13 +124,13 @@ Visual hierarchy created through CSS transforms provides intuitive understanding
 
 ### Next-Generation Features (IMPLEMENTED IN v2.0)
 
-✅ **1. Async Research Architecture - COMPLETE**
+ **1. Async Research Architecture - COMPLETE**
    - WebSocket server on ws://localhost:3001/ws
    - Background research with ParallelMCPService
    - Real-time progress notifications via WebSocket
    - Progressive timeline enhancement (blue dots → green glow)
 
-✅ **2. Chain of Agents Pattern - COMPLETE**
+ **2. Chain of Agents Pattern - COMPLETE**
    - ChainCoordinator implemented in backend
    - Dynamic agent collaboration
    - Confidence-based handoffs (95% threshold)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { ResearchTierProvider } from './contexts/ResearchTierContext';
 import Navigation from './components/Navigation';
 import ConversationalConfigView from './views/ConversationalConfigView';
 import TimelineView from './views/TimelineView';
@@ -62,32 +63,34 @@ function App() {
 
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen bg-white dark:bg-neutral-950 transition-colors duration-200">
-          <Navigation
-            showHome={phase === 'timeline'}
-            onHomeClick={handleResetTimeline}
-          />
-          {phase === 'configuration' ? (
-            <ConversationalConfigView
-              onTimelineCreated={handleTimelineCreated}
+      <ResearchTierProvider>
+        <QueryClientProvider client={queryClient}>
+          <div className="min-h-screen bg-white dark:bg-neutral-950 transition-colors duration-200">
+            <Navigation
+              showHome={phase === 'timeline'}
+              onHomeClick={handleResetTimeline}
             />
-          ) : (
-            <TimelineView
-              timelineId={timelineId!}
-              onResetTimeline={handleResetTimeline}
-              researchingBlocks={researchingBlocks}
-              completedBlocks={completedBlocks}
-            />
-          )}
+            {phase === 'configuration' ? (
+              <ConversationalConfigView
+                onTimelineCreated={handleTimelineCreated}
+              />
+            ) : (
+              <TimelineView
+                timelineId={timelineId!}
+                onResetTimeline={handleResetTimeline}
+                researchingBlocks={researchingBlocks}
+                completedBlocks={completedBlocks}
+              />
+            )}
 
-          {/* Research notification toasts */}
-          <ResearchNotificationContainer
-            updates={notifications}
-            onDismiss={handleDismissNotification}
-          />
-        </div>
-      </QueryClientProvider>
+            {/* Research notification toasts */}
+            <ResearchNotificationContainer
+              updates={notifications}
+              onDismiss={handleDismissNotification}
+            />
+          </div>
+        </QueryClientProvider>
+      </ResearchTierProvider>
     </ThemeProvider>
   );
 }

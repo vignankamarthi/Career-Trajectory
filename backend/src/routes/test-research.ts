@@ -105,7 +105,7 @@ router.get('/websocket', (req, res) => {
   </style>
 </head>
 <body>
-  <h1>🚀 WebSocket + Async Research Test</h1>
+  <h1> WebSocket + Async Research Test</h1>
   <div>
     <button onclick="connectWS()">1. Connect WebSocket</button>
     <button onclick="triggerResearch()">2. Trigger Test Research</button>
@@ -139,32 +139,32 @@ router.get('/websocket', (req, res) => {
       ws = new WebSocket('ws://localhost:3001/ws');
 
       ws.onopen = () => {
-        log('✅ WebSocket CONNECTED!', 'success');
+        log(' WebSocket CONNECTED!', 'success');
       };
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        log(\`📨 Received: \${data.type}\`, 'info');
+        log(\` Received: \${data.type}\`, 'info');
         log(JSON.stringify(data, null, 2), 'info');
 
         if (data.type === 'research_complete') {
-          log('✅ RESEARCH COMPLETE!', 'success');
+          log(' RESEARCH COMPLETE!', 'success');
         }
       };
 
       ws.onerror = (error) => {
-        log('❌ WebSocket ERROR: ' + error, 'error');
+        log(' WebSocket ERROR: ' + error, 'error');
       };
 
       ws.onclose = () => {
-        log('❌ WebSocket CLOSED', 'warning');
+        log(' WebSocket CLOSED', 'warning');
         ws = null;
       };
     }
 
     async function triggerResearch() {
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        log('❌ Connect WebSocket first!', 'error');
+        log(' Connect WebSocket first!', 'error');
         return;
       }
 
@@ -179,12 +179,12 @@ router.get('/websocket', (req, res) => {
         const data = await response.json();
         taskId = data.taskId;
 
-        log(\`✅ Research task created: \${taskId}\`, 'success');
-        log(\`⏱️ Estimated time: \${data.estimatedTime}s\`, 'info');
-        log('👀 Watch for WebSocket updates!', 'info');
+        log(\` Research task created: \${taskId}\`, 'success');
+        log(\`⏱ Estimated time: \${data.estimatedTime}s\`, 'info');
+        log(' Watch for WebSocket updates!', 'info');
 
       } catch (error) {
-        log('❌ Failed to trigger research: ' + error, 'error');
+        log(' Failed to trigger research: ' + error, 'error');
       }
     }
   </script>

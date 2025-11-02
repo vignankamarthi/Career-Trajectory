@@ -414,11 +414,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This project builds upon foundational research in multi-agent systems and AI coordination. For complete academic attribution and proper citations:
 
-📚 **[CITATIONS_AND_CREDITS.md](./CITATIONS_AND_CREDITS.md)** - Academic integrity and source attribution
+ **[CITATIONS_AND_CREDITS.md](./CITATIONS_AND_CREDITS.md)** - Academic integrity and source attribution
 
 ---
 
 <div align="center">
   <h3>Star this repo if you found it helpful!</h3>
-  <p><strong>Built with ❤️ by developers who believe in the power of personalized AI guidance</strong></p>
+  <p><strong>Built with ❤ by developers who believe in the power of personalized AI guidance</strong></p>
 </div>

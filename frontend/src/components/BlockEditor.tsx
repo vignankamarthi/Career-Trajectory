@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Block, apiClient } from '../lib/api';
+import { useResearchTier } from '../contexts/ResearchTierContext';
 
 interface BlockEditorProps {
   block: Block;
@@ -14,6 +15,8 @@ interface BlockEditorProps {
  * - Display research results
  */
 function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
+  const { selectedTier, getTierInfo } = useResearchTier();
+
   const [formData, setFormData] = useState({
     title: block.title,
     description: block.description || '',
@@ -26,17 +29,22 @@ function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
   const [error, setError] = useState<string | null>(null);
   const [researchResults, setResearchResults] = useState<any | null>(null);
 
+  const selectedTierInfo = getTierInfo(selectedTier);
+
   // Parse existing research data if available
   const existingResearch = block.research_data
     ? JSON.parse(block.research_data)
     : null;
 
-  const handleResearch = async (processor: 'base' | 'pro' = 'pro') => {
+  const handleResearch = async (type: 'quick' | 'deep') => {
     setIsResearching(true);
     setError(null);
 
+    // Quick = always LITE, Deep = user's selected tier
+    const processor = type === 'quick' ? 'lite' : selectedTier;
+
     try {
-      const result = await apiClient.blocks.research(block.id!, processor);
+      const result = await apiClient.blocks.research(block.id!, processor as any);
       setResearchResults(result.research);
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Research failed');
@@ -161,18 +169,20 @@ function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Research</h3>
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleResearch('base')}
+                  onClick={() => handleResearch('quick')}
                   disabled={isResearching}
                   className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  title="Always uses Lite tier - fastest, cheapest"
                 >
                   Quick Research ($0.005)
                 </button>
                 <button
-                  onClick={() => handleResearch('pro')}
+                  onClick={() => handleResearch('deep')}
                   disabled={isResearching}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  title={`Uses your selected tier: ${selectedTierInfo.name} ($${(selectedTierInfo.price / 1000).toFixed(2)} per query)`}
                 >
-                  {isResearching ? 'Researching...' : 'Deep Research ($0.05)'}
+                  {isResearching ? 'Researching...' : `Deep Research ($${(selectedTierInfo.price / 1000).toFixed(2)})`}
                 </button>
               </div>
             </div>

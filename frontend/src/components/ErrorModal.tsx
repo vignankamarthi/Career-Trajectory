@@ -27,7 +27,7 @@ export default function ErrorModal({ error, onClose }: ErrorModalProps) {
     switch (error.severity) {
       case 'critical':
         return {
-          icon: '🚨',
+          icon: 'CRITICAL',
           bgColor: 'bg-red-100 dark:bg-red-950',
           borderColor: 'border-red-300 dark:border-red-800',
           textColor: 'text-red-900 dark:text-red-100',
@@ -35,7 +35,7 @@ export default function ErrorModal({ error, onClose }: ErrorModalProps) {
         };
       case 'error':
         return {
-          icon: 'WARNING',
+          icon: 'ERROR',
           bgColor: 'bg-red-50 dark:bg-red-950/30',
           borderColor: 'border-red-200 dark:border-red-900',
           textColor: 'text-red-800 dark:text-red-200',
@@ -43,7 +43,7 @@ export default function ErrorModal({ error, onClose }: ErrorModalProps) {
         };
       case 'warning':
         return {
-          icon: 'ERROR',
+          icon: 'WARNING',
           bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
           borderColor: 'border-yellow-200 dark:border-yellow-900',
           textColor: 'text-yellow-800 dark:text-yellow-200',
@@ -51,7 +51,7 @@ export default function ErrorModal({ error, onClose }: ErrorModalProps) {
         };
       case 'info':
         return {
-          icon: 'ℹ️',
+          icon: 'INFO',
           bgColor: 'bg-blue-50 dark:bg-blue-950/30',
           borderColor: 'border-blue-200 dark:border-blue-900',
           textColor: 'text-blue-800 dark:text-blue-200',
