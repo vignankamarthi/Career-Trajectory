@@ -40,7 +40,7 @@ export class ParallelMCPService {
 
 **Key Features**:
 - Task queue with in-memory Map storage
-- Automatic 15-minute cleanup of old tasks
+- Automatic 15-minute cleanup of old tasks 
 - Routes to specialized research agents
 - WebSocket notifications at every stage
 
