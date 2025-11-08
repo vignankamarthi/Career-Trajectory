@@ -932,13 +932,7 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
         isOpen={showGenerateModal}
         onClose={() => setShowGenerateModal(false)}
         onConfirm={handleGenerateConfirm}
-        onChangePricing={() => {
-          setShowGenerateModal(false);
-          // User will manually navigate to pricing tab
-          alert('Please use the Pricing tab to change your model selection, then return here to generate.');
-        }}
-        selectedModel="Claude Sonnet 4" // Using Sonnet 4 (claude-sonnet-4-20250514)
-        estimatedCost={0.0045} // TODO: Calculate based on actual model and context
+        estimatedCost={0.0045} // TODO: Calculate based on actual usage
       />
     </div>
   );

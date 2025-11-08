@@ -1,16 +1,14 @@
 /**
  * Generate Confirmation Modal
  *
- * Confirms timeline generation with current model selection.
- * Allows user to change model before generating.
+ * Confirms timeline generation before starting the 4-agent workflow.
+ * Shows estimated cost if available.
  */
 
 interface GenerateConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  onChangePricing: () => void;
-  selectedModel: string;
   estimatedCost?: number;
 }
 
@@ -18,8 +16,6 @@ export default function GenerateConfirmationModal({
   isOpen,
   onClose,
   onConfirm,
-  onChangePricing,
-  selectedModel,
   estimatedCost,
 }: GenerateConfirmationModalProps) {
   if (!isOpen) return null;
@@ -42,17 +38,8 @@ export default function GenerateConfirmationModal({
           </p>
         </div>
 
-        <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              Model:
-            </span>
-            <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-              {selectedModel}
-            </span>
-          </div>
-
-          {estimatedCost !== undefined && (
+        {estimatedCost !== undefined && (
+          <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 Estimated Cost:
@@ -61,15 +48,8 @@ export default function GenerateConfirmationModal({
                 ${estimatedCost.toFixed(4)}
               </span>
             </div>
-          )}
-
-          <button
-            onClick={onChangePricing}
-            className="mt-3 w-full text-sm text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            Change Model in Pricing Tab →
-          </button>
-        </div>
+          </div>
+        )}
 
         <div className="flex gap-3">
           <button
