@@ -104,6 +104,29 @@ function App() {
     localStorage.removeItem('career-trajectory-conversation');
   };
 
+  // Store the chat navigation function from ConversationalConfigView
+  const [chatNavigationRef, setChatNavigationRef] = useState<(() => void) | null>(null);
+
+  // Debug function to track when navigation ref is set
+  const handleSetChatNavigationRef = (fn: () => void) => {
+    console.log('setChatNavigationRef called with function:', !!fn);
+    setChatNavigationRef(fn);
+  };
+  const [hasUploadedFiles, setHasUploadedFiles] = useState(false);
+
+  // Non-destructive navigation back to home (just navigation, no data reset)
+  const handleNavigateHome = () => {
+    // For timeline page: just go back to configuration phase (keep timeline data)
+    if (phase === 'timeline') {
+      setPhase('configuration');
+      return;
+    }
+    // For chat page: call the navigation function if available
+    if (chatNavigationRef) {
+      chatNavigationRef();
+    }
+  };
+
   const handleDismissNotification = (index: number) => {
     setNotifications(prev => prev.filter((_, i) => i !== index));
   };
@@ -114,12 +137,15 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <div className="min-h-screen bg-white dark:bg-neutral-950 transition-colors duration-200">
             <Navigation
-              showHome={phase === 'timeline'}
-              onHomeClick={handleResetTimeline}
+              showHome={true}
+              onHomeClick={handleNavigateHome}
+              hasUploadedFiles={hasUploadedFiles}
             />
             {phase === 'configuration' ? (
               <ConversationalConfigView
                 onTimelineCreated={handleTimelineCreated}
+                onNavigateHome={handleSetChatNavigationRef}
+                onFilesChange={setHasUploadedFiles}
               />
             ) : (
               <TimelineView

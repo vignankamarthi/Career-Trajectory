@@ -6,18 +6,22 @@ import PricingModal from './PricingModal';
 interface NavigationProps {
   onHomeClick?: () => void;
   showHome?: boolean;
+  hasUploadedFiles?: boolean;
 }
 
-export default function Navigation({ onHomeClick, showHome = false }: NavigationProps) {
+export default function Navigation({ onHomeClick, showHome = false, hasUploadedFiles = false }: NavigationProps) {
   const { theme, toggleTheme } = useTheme();
   const { selectedTier, getTierInfo } = useResearchTier();
   const [showPricingModal, setShowPricingModal] = useState(false);
 
   const tierInfo = getTierInfo(selectedTier);
 
+  // Calculate right position based on uploaded files
+  const rightPosition = hasUploadedFiles ? 'calc(256px + 1rem)' : '1rem'; // 256px (w-64) + 1rem margin
+
   return (
     <>
-      <nav className="fixed right-4 flex items-center gap-2 z-50" style={{top: '6rem'}}>
+      <nav className="fixed flex items-center gap-2 z-50" style={{top: '7.5rem', right: rightPosition}}>
         {/* Home Button */}
         {showHome && onHomeClick && (
           <button

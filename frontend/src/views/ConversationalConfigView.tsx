@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiClient } from '../lib/api';
 import ErrorModal from '../components/ErrorModal';
 import GenerateConfirmationModal from '../components/GenerateConfirmationModal';
@@ -17,6 +17,8 @@ import remarkGfm from 'remark-gfm';
 
 interface ConversationalConfigViewProps {
   onTimelineCreated: (timelineId: string) => void;
+  onNavigateHome: (navigationFn: () => void) => void;
+  onFilesChange: (hasFiles: boolean) => void;
 }
 
 interface Message {
@@ -59,7 +61,7 @@ interface PersistedConversationState {
   };
 }
 
-function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigViewProps) {
+function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesChange }: ConversationalConfigViewProps) {
   // State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [contextId, setContextId] = useState<string | null>(null);
@@ -89,7 +91,7 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
   const [timelines, setTimelines] = useState<TimelineItem[]>([]);
   const [trash, setTrash] = useState<TimelineItem[]>([]);
   const [activeView, setActiveView] = useState<'timelines' | 'trash'>('timelines');
-  const [inputPanelHeight, setInputPanelHeight] = useState(120); // Initial height in pixels
+  const [inputPanelHeight, setInputPanelHeight] = useState(160); // Initial height in pixels
   const [isResizing, setIsResizing] = useState(false);
 
   // Ref for auto-scroll
@@ -164,7 +166,7 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
 
       const windowHeight = window.innerHeight;
       const maxHeight = windowHeight * 0.5; // 50% of screen height
-      const minHeight = 120; // Minimum height in pixels
+      const minHeight = 160; // Minimum height in pixels
 
       // Calculate new height (distance from bottom of screen to mouse)
       const newHeight = windowHeight - e.clientY;
@@ -412,10 +414,24 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
     }
   };
 
-  const handleBackToHome = () => {
+  const handleBackToHome = useCallback(() => {
     // Navigate back to home without clearing conversation state
+    console.log('handleBackToHome called, current showInitialForm:', showInitialForm);
     setShowInitialForm(true);
-  };
+    console.log('setShowInitialForm(true) called');
+  }, [showInitialForm]);
+
+  // Register navigation function with parent component
+  useEffect(() => {
+    console.log('Registering navigation function with parent component');
+    onNavigateHome(handleBackToHome);
+  }, [onNavigateHome, handleBackToHome]);
+
+  // Notify parent when uploaded files change
+  useEffect(() => {
+    const hasFiles = !showInitialForm && (uploadedFiles.length > 0 || chatFiles.length > 0);
+    onFilesChange(hasFiles);
+  }, [uploadedFiles.length, chatFiles.length, showInitialForm, onFilesChange]);
 
   const handleContinueChat = () => {
     // Resume saved conversation
@@ -583,14 +599,6 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              {!showInitialForm && (
-                <button
-                  onClick={handleBackToHome}
-                  className="px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                >
-                  Home
-                </button>
-              )}
             </div>
             <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 text-center flex-1">
               Career Trajectory Builder
@@ -662,6 +670,8 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                     className="w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500"
                     placeholder="Enter your name"
                     required
+                    data-gramm="true"
+                    data-gramm-editor="true"
                   />
                 </div>
 

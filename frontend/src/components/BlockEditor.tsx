@@ -116,6 +116,8 @@ function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-4 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                data-gramm="true"
+                data-gramm-editor="true"
               />
             </div>
 
