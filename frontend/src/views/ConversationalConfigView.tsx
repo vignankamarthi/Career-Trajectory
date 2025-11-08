@@ -349,6 +349,38 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
     }
   };
 
+  const handleBackToHome = () => {
+    // Navigate back to home without clearing conversation state
+    setShowInitialForm(true);
+  };
+
+  const handleContinueChat = () => {
+    // Resume saved conversation
+    setShowInitialForm(false);
+  };
+
+  const handleStartNewChat = () => {
+    // Clear conversation state and start fresh
+    localStorage.removeItem(CONVERSATION_STORAGE_KEY);
+    setContextId(null);
+    setMessages([]);
+    setConfidence(0);
+    setIsReadyToGenerate(false);
+    setInitialFormData({
+      user_name: '',
+      start_age: 14,
+      end_age: 18,
+      end_goal: '',
+      num_layers: 2,
+    });
+    setUploadedFiles([]);
+    setChatFiles([]);
+    setShowInitialForm(true);
+  };
+
+  // Check if there's a saved conversation
+  const hasSavedConversation = contextId !== null && messages.length > 0;
+
   return (
     <div className="h-screen flex bg-neutral-50 dark:bg-neutral-950">
       {/* Sidebar */}
@@ -479,14 +511,24 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
         {/* Header with Sidebar Toggle and Confidence Bar */}
         <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 p-4">
           <div className="flex items-center justify-between mb-3">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              {!showInitialForm && (
+                <button
+                  onClick={handleBackToHome}
+                  className="px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                >
+                  Home
+                </button>
+              )}
+            </div>
             <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 text-center flex-1">
               Career Trajectory Builder
             </h1>
@@ -521,6 +563,28 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
           {showInitialForm ? (
             // Initial Configuration Form
             <div className="max-w-2xl mx-auto">
+              {/* Continue or Start New Chat Section */}
+              {hasSavedConversation && (
+                <div className="mb-6 p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
+                  <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                    You have a conversation in progress
+                  </h3>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleContinueChat}
+                      className="flex-1 px-4 py-2.5 bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 font-medium rounded-lg transition-colors"
+                    >
+                      Continue Chat
+                    </button>
+                    <button
+                      onClick={handleStartNewChat}
+                      className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-950 hover:bg-neutral-50 dark:hover:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-medium rounded-lg transition-colors"
+                    >
+                      Start New Chat
+                    </button>
+                  </div>
+                </div>
+              )}
               <form onSubmit={handleInitialSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
