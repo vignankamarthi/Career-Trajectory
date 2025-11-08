@@ -188,6 +188,7 @@ export class Logger {
     systemLogger.debug(message, context);
   }
 
+
   /**
    * Log errors with full context
    * Pattern: Dual-write to system.log and errors.log

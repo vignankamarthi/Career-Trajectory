@@ -206,7 +206,7 @@ Return a corrected timeline that:
         cost: response.cost,
       };
     } else {
-      Logger.warn('Correction attempt still has errors', {
+      Logger.info('Correction attempt still has errors', {
         originalErrors: errors.length,
         remainingErrors: newErrors.length,
         cost: response.cost,

@@ -107,20 +107,13 @@ function App() {
   // Note: chatNavigationRef removed - now using direct navigation control
   const [hasUploadedFiles, setHasUploadedFiles] = useState(false);
 
-  // Non-destructive navigation back to home (just navigation, no data reset)
+  // Navigate back to true home page (landing page with new chat option)
   const handleNavigateHome = () => {
     console.log('App handleNavigateHome called, current phase:', phase);
-    // For timeline page: just go back to configuration phase (keep timeline data)
-    if (phase === 'timeline') {
-      setPhase('configuration');
-      return;
-    }
-    // For configuration page (chat interface): set a flag to show home form with Continue/New options
-    if (phase === 'configuration') {
-      // Set a flag in localStorage to indicate user clicked Home button
-      localStorage.setItem('career-trajectory-show-home', 'true');
-      window.location.reload();
-    }
+    // Always navigate to true home page regardless of current phase
+    // Set a flag in localStorage to indicate user clicked Home button
+    localStorage.setItem('career-trajectory-show-home', 'true');
+    window.location.reload();
   };
 
   const handleDismissNotification = (index: number) => {

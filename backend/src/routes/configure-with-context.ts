@@ -26,6 +26,9 @@ import { processUploadedFiles } from '../utils/pdf-extractor';
 
 const router = express.Router();
 
+// CONCURRENCY CONTROL: Prevent multiple timeline generations from running simultaneously
+const activeGenerations = new Set<string>();
+
 // Configure multer for file uploads
 const uploadDir = path.join(__dirname, '../../../uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -440,6 +443,21 @@ router.post('/generate', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required field: context_id' });
     }
 
+    // CONCURRENCY CONTROL: Check if generation is already running for this context
+    if (activeGenerations.has(context_id)) {
+      Logger.warn('Timeline generation already in progress', { context_id });
+      return res.status(429).json({
+        error: 'Timeline generation already in progress for this context',
+        type: 'user_error',
+        severity: 'warning' as const,
+        userMessage: 'A timeline is already being generated. Please wait for it to complete.',
+        suggestions: ['Wait for the current generation to finish', 'Refresh the page to see the status']
+      });
+    }
+
+    // Mark this context as actively generating
+    activeGenerations.add(context_id);
+
     // Optional threshold for testing (defaults to 90 in agent)
     // NOTE: 90% threshold chosen after extensive Phase 1 & 2 testing
     // - Provides excellent quality while maintaining reliability
@@ -486,6 +504,9 @@ router.post('/generate', async (req: Request, res: Response) => {
     const configResult = await generateWithContext(context, confidence_threshold);
 
     if (!configResult.is_confident || !configResult.timeline) {
+      // CONCURRENCY CONTROL: Clean up on failure
+      activeGenerations.delete(context_id);
+
       Logger.error('Configuration agent failed to generate timeline');
       return res.status(500).json({
         error: 'Failed to generate timeline',
@@ -544,6 +565,9 @@ router.post('/generate', async (req: Request, res: Response) => {
       confidence: configResult.confidence_score,
     });
 
+    // CONCURRENCY CONTROL: Clean up on success
+    activeGenerations.delete(context_id);
+
     return res.json({
       timeline_id,
       timeline: configResult.timeline,
@@ -553,6 +577,9 @@ router.post('/generate', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    // CONCURRENCY CONTROL: Clean up on error
+    activeGenerations.delete(context_id);
+
     Logger.error('Failed to generate timeline', error as Error);
     return res.status(500).json({ error: 'Failed to generate timeline' });
   }

@@ -2,7 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import Logger from '../utils/logger';
 
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 /**
  * Parallel AI API client wrapper with logging and cost tracking

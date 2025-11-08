@@ -16,9 +16,9 @@ import Logger from './utils/logger';
 import { testConstraints } from './database/db';
 import { initializeWebSocketServer } from './websocket/research-websocket';
 
-// Load environment variables from .env file
+// Load environment variables from .env file in project root
 // Critical: Must load before importing any modules that use process.env
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3001; // Default to 3001 for development

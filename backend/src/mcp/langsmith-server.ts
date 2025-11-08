@@ -16,7 +16,7 @@ import {
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const LANGSMITH_API_KEY = process.env.LANGCHAIN_API_KEY;
 const LANGSMITH_PROJECT = process.env.LANGCHAIN_PROJECT || 'career-trajectory';

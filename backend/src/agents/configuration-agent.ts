@@ -584,8 +584,8 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
       is_confident,
       layers: layers.length,
       totalBlocks: layers.reduce((sum, layer) => sum + layer.blocks.length, 0),
-      challenging_count: challenging_blocks.length,
-      assumptions_count: assumptions_made.length,
+      challenging_count: challenging_blocks?.length || 0,
+      assumptions_count: assumptions_made?.length || 0,
       cost: response.cost,
     });
 
@@ -603,8 +603,8 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
       const attention: ConfigurationAttention = {
         confidence_score: 0,
         generated_structure,
-        challenging_blocks,
-        assumptions_made,
+        challenging_blocks: challenging_blocks || [],
+        assumptions_made: assumptions_made || [],
       };
 
       return {
@@ -629,8 +629,8 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
     const attention: ConfigurationAttention = {
       confidence_score,
       generated_structure,
-      challenging_blocks,
-      assumptions_made,
+      challenging_blocks: challenging_blocks || [],
+      assumptions_made: assumptions_made || [],
     };
 
     return {
