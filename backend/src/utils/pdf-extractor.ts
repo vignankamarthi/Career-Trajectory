@@ -2,10 +2,11 @@
  * PDF Text Extraction Utility
  *
  * Extracts text content from PDF files for use in agent context.
- * Uses dynamic imports to avoid CommonJS compatibility issues with tsx.
+ * Uses Claude API for PDF extraction (more reliable than pdf-parse).
  */
 
 import fs from 'fs';
+import Anthropic from '@anthropic-ai/sdk';
 import Logger from './logger';
 
 export interface ExtractedFileContent {
@@ -17,36 +18,52 @@ export interface ExtractedFileContent {
   error?: string;
 }
 
-// Lazy-load pdf-parse to avoid CommonJS import issues with tsx
-let pdfParse: any = null;
-
-async function getPdfParser() {
-  if (!pdfParse) {
-    // Use dynamic import to load pdf-parse
-    const module = await import('pdf-parse');
-    pdfParse = module.default || module;
-  }
-  return pdfParse;
-}
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 /**
- * Extract text content from a PDF file
+ * Extract text content from a PDF file using Claude API
  * @param filePath - Absolute path to the PDF file
  * @returns Promise<string> - Extracted text content
  */
 export async function extractPDFText(filePath: string): Promise<string> {
   try {
-    const dataBuffer = fs.readFileSync(filePath);
-    const pdf = await getPdfParser();
-    const data = await pdf(dataBuffer);
+    const pdfData = fs.readFileSync(filePath);
+    const base64Pdf = pdfData.toString('base64');
 
-    Logger.info('PDF text extracted successfully', {
-      path: filePath,
-      pages: data.numpages,
-      textLength: data.text.length,
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 4096,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: {
+                type: 'base64',
+                media_type: 'application/pdf',
+                data: base64Pdf,
+              },
+            },
+            {
+              type: 'text',
+              text: 'Extract all text content from this PDF document. Return only the extracted text, no additional commentary.',
+            },
+          ],
+        },
+      ],
     });
 
-    return data.text.trim();
+    const extractedText = response.content[0].type === 'text' ? response.content[0].text : '';
+
+    Logger.info('PDF text extracted successfully with Claude API', {
+      path: filePath,
+      textLength: extractedText.length,
+    });
+
+    return extractedText.trim();
   } catch (error) {
     Logger.error('Failed to extract PDF text', {
       path: filePath,
@@ -77,14 +94,9 @@ export async function extractFileContent(
 
     switch (ext) {
       case 'pdf':
-        const pdfData = fs.readFileSync(file.path);
-        const pdf = await getPdfParser();
-        const parsed = await pdf(pdfData);
-        result.extractedText = parsed.text.trim();
-        result.pageCount = parsed.numpages;
-        Logger.info('PDF processed', {
+        result.extractedText = await extractPDFText(file.path);
+        Logger.info('PDF processed with Claude API', {
           file: file.originalname,
-          pages: parsed.numpages,
           chars: result.extractedText.length,
         });
         break;
