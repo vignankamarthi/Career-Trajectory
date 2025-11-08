@@ -1,9 +1,9 @@
 # Career Trajectory AI - Complete Project Summary
 
-**Version**: 2.0.0
+**Version**: 2.1.0
 **Status**: Production Ready with Async Architecture
-**Date**: November 2, 2025
-**Architecture**: Async Agentic with WebSocket + 95% Confidence Threshold
+**Date**: January 7, 2025
+**Architecture**: Async Agentic with WebSocket + 95% Confidence Threshold + PDF Support + State Persistence
 
 ---
 
@@ -99,24 +99,38 @@ Visual hierarchy created through CSS transforms provides intuitive understanding
    - Context-aware suggestions
    - Timeline refactoring without research
 
-3. **Dark Mode Support**
+3. **PDF Document Processing** (NEW v2.1)
+   - Automatic PDF text extraction using pdf-parse
+   - Resume and transcript upload support
+   - Multi-file upload capability
+   - Text integration into agent context
+   - Error handling for unsupported formats
+
+4. **State Persistence** (NEW v2.1)
+   - localStorage-based state management
+   - Conversation history survives page reloads
+   - Timeline phase persistence
+   - Smart cleanup on successful generation
+   - Zero data loss on browser refresh
+
+5. **Dark Mode Support**
    - Complete dark mode implementation
    - Consistent color scheme
    - Reduced eye strain for extended use
 
-4. **Error Handling System**
+6. **Error Handling System**
    - UserError class for user-friendly messages
    - Severity levels (info/warning/error/critical)
    - Actionable suggestions
    - Field-specific validation
 
-5. **Observability**
+7. **Observability**
    - LangSmith integration for tracing
    - Real-time monitoring at smith.langchain.com
    - Project: "career-trajectory"
    - Full request/response logging
 
-6. **Research Integration** (Optional)
+8. **Research Integration** (Optional)
    - Parallel AI with 9 processor tiers
    - Cost-transparent ($0.005 - $2.40 per query)
    - Deep research on programs and opportunities
@@ -173,7 +187,8 @@ Career-Trajectory/
 │   │   │   └── configuration-agent.ts
 │   │   ├── utils/         # Utilities
 │   │   │   ├── langsmith-tracer.ts
-│   │   │   └── UserError.ts
+│   │   │   ├── UserError.ts
+│   │   │   └── pdf-extractor.ts      # PDF text extraction (NEW)
 │   │   └── services/      # Business logic
 │   │       └── parallel-research.ts
 ├── data/                   # SQLite database

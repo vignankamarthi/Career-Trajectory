@@ -2,8 +2,9 @@
 
 ## Revolutionary Architecture: Async Research + WebSocket + Chain of Agents
 
-**Status**: FULLY IMPLEMENTED (Phase 2 Complete)
-**Date**: November 2, 2025
+**Status**: FULLY IMPLEMENTED (Phase 2 Complete + v2.1 Features)
+**Date**: January 7, 2025
+**New in v2.1**: PDF Document Processing + State Persistence
 
 ### Core Innovation: Decoupled Research & Conversation
 
@@ -179,6 +180,84 @@ CREATE INDEX idx_research_tasks_status ON research_tasks(status);
 ```
 
 **Migration**: `backend/src/database/migrations/002_add_research_tasks.sql`
+
+---
+
+## New Features in v2.1
+
+### 7. PDF Document Processing
+**Status**:  COMPLETE
+**Date**: January 7, 2025
+
+**Implementation**: `backend/src/utils/pdf-extractor.ts`
+```typescript
+export async function extractPDFText(filePath: string): Promise<string>
+export async function extractFileContent(file: Express.Multer.File): Promise<ExtractedFileContent>
+export async function processUploadedFiles(files: Express.Multer.File[]): Promise<ExtractedFileContent[]>
+```
+
+**Features**:
+- Automatic PDF text extraction using `pdf-parse` library
+- Multi-file upload support (PDFs, TXT files)
+- Integration into agent context via `uploaded_files` field
+- Error handling for unsupported formats (DOCX shows helpful message)
+- Page count tracking for PDFs
+- File metadata preservation (filename, size, mimetype)
+
+**Agent Integration**:
+All three conversational agents now receive and use PDF content:
+- `PreValidationAgent` - Sees uploaded files in initial analysis
+- `ConversationalClarificationAgent` - Uses file content to ask better questions
+- `ConfigurationAgent` - Incorporates resume/transcript data into timeline generation
+
+**User Flow**:
+1. User uploads PDF resume/transcript in configuration form
+2. Backend extracts text using pdf-parse
+3. Text added to AgentContext.uploaded_files[]
+4. All agents receive extracted text in their prompts
+5. Timeline personalized based on actual user background
+
+### 8. State Persistence System
+**Status**:  COMPLETE
+**Date**: January 7, 2025
+
+**Implementation**:
+- `frontend/src/App.tsx` - Main app state persistence
+- `frontend/src/views/ConversationalConfigView.tsx` - Conversation state persistence
+
+**localStorage Keys**:
+```typescript
+'career-trajectory-phase'        // 'configuration' | 'timeline'
+'career-trajectory-timeline-id'  // Current timeline UUID
+'career-trajectory-conversation' // Full conversation state
+```
+
+**Persisted State**:
+```typescript
+interface PersistedConversationState {
+  contextId: string | null;          // Active agent context
+  messages: Message[];               // Full chat history
+  confidence: number;                // Current confidence score
+  showInitialForm: boolean;          // UI state
+  isReadyToGenerate: boolean;        // Can generate timeline?
+  initialFormData: UserConfig;       // User's form inputs
+}
+```
+
+**Features**:
+- Zero data loss on browser refresh/reload
+- Conversation history survives page reloads
+- Timeline phase persistence (configuration vs timeline view)
+- Smart cleanup on successful generation (prevents stale data)
+- Smart cleanup on Home button click
+- Prevents double-writes with initialization flag
+
+**User Flow**:
+1. User fills out form, uploads files
+2. State automatically saved to localStorage
+3. User closes browser tab accidentally
+4. User reopens → All form data, files, conversation restored
+5. User generates timeline → Conversation state cleared for next session
 
 ---
 

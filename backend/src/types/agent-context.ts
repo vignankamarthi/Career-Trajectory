@@ -160,10 +160,19 @@ export interface UploadedFile {
   path: string;
 
   /** MIME type */
-  mimetype: string;
+  mimetype?: string;
 
   /** File size in bytes */
-  size: number;
+  size?: number;
+
+  /** Extracted text content from the file (for PDFs, TXT files) */
+  extractedText?: string;
+
+  /** Number of pages (for PDFs) */
+  pageCount?: number;
+
+  /** Error message if extraction failed */
+  error?: string;
 }
 
 /**

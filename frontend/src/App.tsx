@@ -28,13 +28,58 @@ const queryClient = new QueryClient({
 
 export type AppPhase = 'configuration' | 'timeline';
 
+const STORAGE_KEYS = {
+  PHASE: 'career-trajectory-phase',
+  TIMELINE_ID: 'career-trajectory-timeline-id',
+};
+
 function App() {
   const [phase, setPhase] = useState<AppPhase>('configuration');
   const [timelineId, setTimelineId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<ResearchUpdate[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // WebSocket connection for async research updates
   const { isConnected, lastMessage, researchingBlocks, completedBlocks } = useWebSocket();
+
+  // Load state from localStorage on mount
+  useEffect(() => {
+    const loadPersistedState = () => {
+      try {
+        const savedPhase = localStorage.getItem(STORAGE_KEYS.PHASE) as AppPhase | null;
+        const savedTimelineId = localStorage.getItem(STORAGE_KEYS.TIMELINE_ID);
+
+        if (savedPhase && savedTimelineId) {
+          setPhase(savedPhase);
+          setTimelineId(savedTimelineId);
+        }
+      } catch (error) {
+        console.error('Failed to load persisted state:', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    loadPersistedState();
+  }, []);
+
+  // Save phase to localStorage when it changes
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.PHASE, phase);
+    }
+  }, [phase, isInitialized]);
+
+  // Save timelineId to localStorage when it changes
+  useEffect(() => {
+    if (isInitialized) {
+      if (timelineId) {
+        localStorage.setItem(STORAGE_KEYS.TIMELINE_ID, timelineId);
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.TIMELINE_ID);
+      }
+    }
+  }, [timelineId, isInitialized]);
 
   // Handle new WebSocket messages
   useEffect(() => {
@@ -55,6 +100,8 @@ function App() {
   const handleResetTimeline = () => {
     setTimelineId(null);
     setPhase('configuration');
+    // Clear conversation state when resetting to configuration
+    localStorage.removeItem('career-trajectory-conversation');
   };
 
   const handleDismissNotification = (index: number) => {

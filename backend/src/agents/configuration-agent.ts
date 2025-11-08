@@ -431,9 +431,23 @@ For user: ${config.user_name}
 Goal: ${config.end_goal}
 Timeline: Age ${config.start_age} to ${config.end_age}`;
 
+  // Build uploaded files context if any files were uploaded
+  let uploadedFilesContext = '';
+  if (context.uploaded_files && context.uploaded_files.length > 0) {
+    uploadedFilesContext = '\n\nUPLOADED FILES:\n';
+    context.uploaded_files.forEach((file, index) => {
+      uploadedFilesContext += `\nFile ${index + 1}: ${file.originalname}\n`;
+      if (file.error) {
+        uploadedFilesContext += `  ERROR: ${file.error}\n`;
+      } else if (file.extractedText) {
+        uploadedFilesContext += `  Content:\n${file.extractedText}\n`;
+      }
+    });
+  }
+
   const userPrompt = `Generate a ${config.num_layers}-layer timeline for ${config.user_name} to achieve: "${config.end_goal}"
 
-Timeline: Age ${config.start_age} to ${config.end_age} (${config.end_age - config.start_age} years)
+Timeline: Age ${config.start_age} to ${config.end_age} (${config.end_age - config.start_age} years)${uploadedFilesContext}
 
 IMPORTANT: Use ALL the context provided from Validation, Conversational, and Internal agents to create a highly personalized timeline that addresses:
 1. The critical constraints and focus areas identified

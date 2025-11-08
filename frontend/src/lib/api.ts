@@ -12,7 +12,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 60000, // 60 seconds (some operations like research can take time)
+  timeout: 600000, // 600 seconds (10 minutes) for timeline generation and research
 });
 
 // Types (matching backend validation schemas)

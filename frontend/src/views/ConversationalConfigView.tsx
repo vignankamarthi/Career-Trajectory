@@ -39,6 +39,23 @@ interface UserErrorResponse {
   code?: string;
 }
 
+const CONVERSATION_STORAGE_KEY = 'career-trajectory-conversation';
+
+interface PersistedConversationState {
+  contextId: string | null;
+  messages: Message[];
+  confidence: number;
+  showInitialForm: boolean;
+  isReadyToGenerate: boolean;
+  initialFormData: {
+    user_name: string;
+    start_age: number;
+    end_age: number;
+    end_goal: string;
+    num_layers: number;
+  };
+}
+
 function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigViewProps) {
   // State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -51,6 +68,7 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
   const [isReadyToGenerate, setIsReadyToGenerate] = useState(false);
   const [error, setError] = useState<UserErrorResponse | null>(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Initial form state
   const [showInitialForm, setShowInitialForm] = useState(true);
@@ -71,6 +89,41 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
 
   // Ref for auto-scroll
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load persisted conversation state on mount
+  useEffect(() => {
+    try {
+      const savedState = localStorage.getItem(CONVERSATION_STORAGE_KEY);
+      if (savedState) {
+        const parsed: PersistedConversationState = JSON.parse(savedState);
+        setContextId(parsed.contextId);
+        setMessages(parsed.messages);
+        setConfidence(parsed.confidence);
+        setShowInitialForm(parsed.showInitialForm);
+        setIsReadyToGenerate(parsed.isReadyToGenerate);
+        setInitialFormData(parsed.initialFormData);
+      }
+    } catch (error) {
+      console.error('Failed to load conversation state:', error);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  // Save conversation state to localStorage whenever it changes
+  useEffect(() => {
+    if (isInitialized) {
+      const stateToSave: PersistedConversationState = {
+        contextId,
+        messages,
+        confidence,
+        showInitialForm,
+        isReadyToGenerate,
+        initialFormData,
+      };
+      localStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(stateToSave));
+    }
+  }, [contextId, messages, confidence, showInitialForm, isReadyToGenerate, initialFormData, isInitialized]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -242,6 +295,10 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
     try {
       const response = await apiClient.configureWithContext.generate(contextId);
       await fetchHistory(); // Refresh timeline list
+
+      // Clear conversation state from localStorage on successful generation
+      localStorage.removeItem(CONVERSATION_STORAGE_KEY);
+
       onTimelineCreated(response.timeline_id);
     } catch (err: any) {
       if (err.response?.data?.type === 'user_error') {
@@ -655,6 +712,23 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                   </div>
                 </div>
               ))}
+
+              {/* Thinking/Loading Indicator */}
+              {isConversing && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] p-4 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-neutral-400 dark:bg-neutral-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                        <div className="w-2 h-2 bg-neutral-400 dark:bg-neutral-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                        <div className="w-2 h-2 bg-neutral-400 dark:bg-neutral-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                      </div>
+                      <span className="text-sm">Thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -799,7 +873,7 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
           // User will manually navigate to pricing tab
           alert('Please use the Pricing tab to change your model selection, then return here to generate.');
         }}
-        selectedModel="Claude Sonnet 3.5" // TODO: Get from pricing context/state
+        selectedModel="Claude Sonnet 4" // Using Sonnet 4 (claude-sonnet-4-20250514)
         estimatedCost={0.0045} // TODO: Calculate based on actual model and context
       />
     </div>

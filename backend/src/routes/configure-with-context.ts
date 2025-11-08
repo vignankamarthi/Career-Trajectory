@@ -22,6 +22,7 @@ import { reviewBeforeGeneration } from '../agents/internal-agent';
 import { generateWithContext } from '../agents/configuration-agent';
 import { AgentContext, ConversationMessage } from '../types/agent-context';
 import { UserError, ValidationErrors } from '../utils/user-errors';
+import { processUploadedFiles } from '../utils/pdf-extractor';
 
 const router = express.Router();
 
@@ -115,6 +116,13 @@ router.post('/init', upload.array('files', 10), async (req: Request, res: Respon
       throw ValidationErrors.INVALID_LAYERS();
     }
 
+    // Process uploaded files (extract text from PDFs, etc.)
+    let processedFiles;
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      Logger.info('Processing uploaded files', { count: uploadedFiles.length });
+      processedFiles = await processUploadedFiles(uploadedFiles);
+    }
+
     // Create initial context
     const context_id = uuidv4();
     const context: AgentContext = {
@@ -133,13 +141,7 @@ router.post('/init', upload.array('files', 10), async (req: Request, res: Respon
         started_at: new Date().toISOString(),
         last_updated_at: new Date().toISOString(),
       },
-      uploaded_files: uploadedFiles?.map((file) => ({
-        originalname: file.originalname,
-        filename: file.filename,
-        path: file.path,
-        mimetype: file.mimetype,
-        size: file.size,
-      })),
+      uploaded_files: processedFiles,
     };
 
     // Run Pre-Validation Agent

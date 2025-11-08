@@ -144,10 +144,24 @@ CRITICAL: Only set is_confident = true when:
     // First question - introduce conversation and ask first question
     const questions = context.attention.validation_agent?.questions_to_ask || [];
 
+    // Build uploaded files context if any files were uploaded
+    let uploadedFilesContext = '';
+    if (context.uploaded_files && context.uploaded_files.length > 0) {
+      uploadedFilesContext = '\n\nUPLOADED FILES:\n';
+      context.uploaded_files.forEach((file, index) => {
+        uploadedFilesContext += `\nFile ${index + 1}: ${file.originalname}\n`;
+        if (file.error) {
+          uploadedFilesContext += `  ERROR: ${file.error}\n`;
+        } else if (file.extractedText) {
+          uploadedFilesContext += `  Content:\n${file.extractedText}\n`;
+        }
+      });
+    }
+
     userPrompt = `You are starting a conversation to gather missing information about the user's career goal.
 
 USER GOAL: ${context.user_config.end_goal}
-AGE RANGE: ${context.user_config.start_age} to ${context.user_config.end_age}
+AGE RANGE: ${context.user_config.start_age} to ${context.user_config.end_age}${uploadedFilesContext}
 
 VALIDATION AGENT ANALYSIS:
 ${context.attention.validation_agent?.missing_information_categories.map((cat) => `- Missing: ${cat}`).join('\n')}

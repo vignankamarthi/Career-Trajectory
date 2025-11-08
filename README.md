@@ -40,6 +40,9 @@ Layer 3: Granular tasks (weekly objectives)
 - Smart question generation based on context gaps
 - Confidence-driven conversation flow
 - Real-time validation and error correction
+- PDF/document upload support (resumes, transcripts)
+- Automatic text extraction and context integration
+- Full conversation state persistence across page reloads
 
 ### Real-Time Research Updates (v2.0 NEW)
 - WebSocket-powered live updates (ws://localhost:3001/ws)
@@ -331,6 +334,8 @@ POST /api/save/:timelineId/refactor      // Deep analysis (~$0.15)
 - Beautiful dark mode support
 - Smooth animations and transitions
 - Accessibility-first approach
+- Smart state persistence (survives page reloads)
+- File upload with drag-and-drop support
 
 ### LLM Export System
 - One-click plain text export functionality

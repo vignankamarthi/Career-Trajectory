@@ -117,6 +117,20 @@ Your analysis should consider:
 
 Remember: It's better to ask too many questions than to generate a generic timeline.`;
 
+  // Build uploaded files context if any files were uploaded
+  let uploadedFilesContext = '';
+  if (context.uploaded_files && context.uploaded_files.length > 0) {
+    uploadedFilesContext = '\n\nUPLOADED FILES:\n';
+    context.uploaded_files.forEach((file, index) => {
+      uploadedFilesContext += `\nFile ${index + 1}: ${file.originalname}\n`;
+      if (file.error) {
+        uploadedFilesContext += `  ERROR: ${file.error}\n`;
+      } else if (file.extractedText) {
+        uploadedFilesContext += `  Content:\n${file.extractedText}\n`;
+      }
+    });
+  }
+
   const userPrompt = `Analyze this user's goal and determine if enough information exists to create a personalized timeline.
 
 USER CONFIGURATION:
@@ -125,7 +139,7 @@ USER CONFIGURATION:
     context.user_config.end_age - context.user_config.start_age
   } years)
 - Goal: ${context.user_config.end_goal}
-- Number of Detail Layers: ${context.user_config.num_layers}
+- Number of Detail Layers: ${context.user_config.num_layers}${uploadedFilesContext}
 
 CRITICAL RULES:
 1. Be AT LEAST 95% confident before saying you have enough information

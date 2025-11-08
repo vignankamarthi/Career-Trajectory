@@ -40,6 +40,8 @@ When you first open the app, you'll see a chat interface. The AI will ask you qu
 - Be specific about your goals
 - Mention any important limitations (location, money, time)
 - Don't worry if you're not sure - the AI will ask clarifying questions
+- **Upload your resume or transcript** (PDF/TXT) to help the AI personalize your timeline
+- **Your conversation is saved automatically** - you can close your browser and come back later without losing progress
 
 ### Step 3: Review Your Timeline
 
