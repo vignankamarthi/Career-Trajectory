@@ -897,11 +897,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] p-4 rounded-lg ${
-                      message.role === 'user'
-                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
-                        : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100'
-                    }`}
+                    className="max-w-[80%] p-4 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100"
                   >
                     <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_strong]:font-bold [&_strong]:font-semibold [&>em]:italic [&>h1]:text-xl [&>h1]:font-bold [&>h2]:text-lg [&>h2]:font-bold [&>h3]:text-base [&>h3]:font-bold">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
