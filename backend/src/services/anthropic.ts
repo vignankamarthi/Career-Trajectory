@@ -19,7 +19,7 @@ const anthropic = new Anthropic({
 
 // Model configurations
 const MODELS = {
-  SONNET: 'claude-sonnet-4-20250514', // Default for all roles (better instruction following)
+  SONNET: 'claude-sonnet-4-5-20250929', // Sonnet 4.5 - optimized for agentic workflows
   HAIKU: 'claude-3-5-haiku-20241022', // Optional for cheaper operations
 };
 
