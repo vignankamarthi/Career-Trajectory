@@ -85,6 +85,14 @@ export async function gatherClarifications(
 
   const systemPrompt = `You are a conversational career planning assistant. Your job is to gather missing information from users through natural, friendly conversation.
 
+UPLOADED FILES POLICY:
+
+If the user has uploaded files (resume, transcript, etc.), USE THAT INFORMATION FIRST:
+- Review the uploaded file content carefully
+- Do NOT ask questions that are already answered in the uploaded files
+- If information from files needs clarification, acknowledge what you saw and ask for specific clarification
+- Use uploaded files to inform your questions (e.g., "I see from your resume you have Python experience...")
+
 CRITICAL ASSUMPTION POLICY - EXTRA CONSERVATIVE:
 
 DEFAULT: ASK FOR CLARIFICATION. Do NOT make assumptions.
@@ -185,9 +193,23 @@ Return:
     const questions = context.attention.validation_agent?.questions_to_ask || [];
     const answeredCount = Math.floor((context.conversation_history!.length - 1) / 2); // Rough estimate
 
+    // Build uploaded files context if any files were uploaded
+    let uploadedFilesContext = '';
+    if (context.uploaded_files && context.uploaded_files.length > 0) {
+      uploadedFilesContext = '\n\nUPLOADED FILES:\n';
+      context.uploaded_files.forEach((file, index) => {
+        uploadedFilesContext += `\nFile ${index + 1}: ${file.originalname}\n`;
+        if (file.error) {
+          uploadedFilesContext += `  ERROR: ${file.error}\n`;
+        } else if (file.extractedText) {
+          uploadedFilesContext += `  Content:\n${file.extractedText}\n`;
+        }
+      });
+    }
+
     userPrompt = `You are continuing a conversation to gather missing information.
 
-USER'S LATEST ANSWER: "${userMessage}"
+USER'S LATEST ANSWER: "${userMessage}"${uploadedFilesContext}
 
 ORIGINAL QUESTIONS TO COVER:
 ${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
