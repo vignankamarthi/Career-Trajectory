@@ -450,9 +450,9 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
 
   // Notify parent when uploaded files change
   useEffect(() => {
-    const hasFiles = !showInitialForm && (uploadedFiles.length > 0 || chatFiles.length > 0);
+    const hasFiles = uploadedFiles.length > 0 || chatFiles.length > 0;
     onFilesChange(hasFiles);
-  }, [uploadedFiles.length, chatFiles.length, showInitialForm, onFilesChange]);
+  }, [uploadedFiles.length, chatFiles.length, onFilesChange]);
 
   const handleContinueChat = useCallback(() => {
     console.log('[CONTINUE] CHAT CLICKED - simple navigation');
