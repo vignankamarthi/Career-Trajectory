@@ -42,6 +42,7 @@ interface UserErrorResponse {
 }
 
 const CONVERSATION_STORAGE_KEY = 'career-trajectory-conversation';
+const DRAFT_INPUT_STORAGE_KEY = 'career-trajectory-draft-input';
 
 interface PersistedConversationState {
   contextId: string | null;
@@ -131,6 +132,23 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Load draft input on mount
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem(DRAFT_INPUT_STORAGE_KEY);
+      if (savedDraft) {
+        setInputValue(savedDraft);
+      }
+    } catch (error) {
+      console.error('Failed to load draft input:', error);
+    }
+  }, []);
+
+  // Save draft input whenever it changes
+  useEffect(() => {
+    localStorage.setItem(DRAFT_INPUT_STORAGE_KEY, inputValue);
+  }, [inputValue]);
 
   // Fetch timeline history on mount
   useEffect(() => {
@@ -774,23 +792,11 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                         : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100'
                     }`}
                   >
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      className="prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-1 prose-strong:font-bold prose-headings:mt-3 prose-headings:mb-2"
-                      components={{
-                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                        ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
-                        ol: ({ children }) => <ol className="list-decimal pl-5 mb-2">{children}</ol>,
-                        li: ({ children }) => <li className="mb-1">{children}</li>,
-                        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
-                        em: ({ children }) => <em className="italic">{children}</em>,
-                        h1: ({ children }) => <h1 className="text-xl font-bold mt-3 mb-2">{children}</h1>,
-                        h2: ({ children }) => <h2 className="text-lg font-bold mt-3 mb-2">{children}</h2>,
-                        h3: ({ children }) => <h3 className="text-base font-bold mt-2 mb-1">{children}</h3>,
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
+                    <div className="[&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>strong]:font-bold [&>em]:italic [&>h1]:text-xl [&>h1]:font-bold [&>h2]:text-lg [&>h2]:font-bold [&>h3]:text-base [&>h3]:font-bold">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               ))}
