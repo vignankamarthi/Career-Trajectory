@@ -104,30 +104,22 @@ function App() {
     localStorage.removeItem('career-trajectory-conversation');
   };
 
-  // Store the chat navigation function from ConversationalConfigView
-  const [chatNavigationRef, setChatNavigationRef] = useState<(() => void) | null>(null);
-
-  // Debug function to track when navigation ref is set
-  const handleSetChatNavigationRef = (fn: () => void) => {
-    console.log('setChatNavigationRef called with function:', !!fn);
-    setChatNavigationRef(fn);
-  };
+  // Note: chatNavigationRef removed - now using direct navigation control
   const [hasUploadedFiles, setHasUploadedFiles] = useState(false);
 
   // Non-destructive navigation back to home (just navigation, no data reset)
   const handleNavigateHome = () => {
-    console.log('App handleNavigateHome called, current phase:', phase, 'chatNavigationRef exists:', !!chatNavigationRef);
+    console.log('App handleNavigateHome called, current phase:', phase);
     // For timeline page: just go back to configuration phase (keep timeline data)
     if (phase === 'timeline') {
       setPhase('configuration');
       return;
     }
-    // For chat page: call the navigation function if available
-    if (chatNavigationRef) {
-      console.log('Calling chatNavigationRef function');
-      chatNavigationRef();
-    } else {
-      console.log('No chatNavigationRef available');
+    // For configuration page (chat interface): set a flag to show home form with Continue/New options
+    if (phase === 'configuration') {
+      // Set a flag in localStorage to indicate user clicked Home button
+      localStorage.setItem('career-trajectory-show-home', 'true');
+      window.location.reload();
     }
   };
 
@@ -148,7 +140,6 @@ function App() {
             {phase === 'configuration' ? (
               <ConversationalConfigView
                 onTimelineCreated={handleTimelineCreated}
-                onNavigateHome={handleSetChatNavigationRef}
                 onFilesChange={setHasUploadedFiles}
               />
             ) : (

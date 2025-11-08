@@ -73,6 +73,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
   const [isReadyToGenerate, setIsReadyToGenerate] = useState(false);
   const [error, setError] = useState<UserErrorResponse | null>(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showNewChatWarning, setShowNewChatWarning] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initial form state
@@ -97,18 +98,39 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
   // Ref for auto-scroll
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Ref to track whether we've processed the home flag in this session
+  const homeNavigationProcessedRef = useRef(false);
+
   // Load persisted conversation state on mount
   useEffect(() => {
     try {
       const savedState = localStorage.getItem(CONVERSATION_STORAGE_KEY);
+      const showHomeFlag = localStorage.getItem('career-trajectory-show-home');
+
       if (savedState) {
         const parsed: PersistedConversationState = JSON.parse(savedState);
         setContextId(parsed.contextId);
         setMessages(parsed.messages);
         setConfidence(parsed.confidence);
-        setShowInitialForm(parsed.showInitialForm);
         setIsReadyToGenerate(parsed.isReadyToGenerate);
         setInitialFormData(parsed.initialFormData);
+
+        // If Home button was clicked, force show initial form even with saved conversation
+        if (showHomeFlag === 'true' && !homeNavigationProcessedRef.current) {
+          console.log('[HOME FLAG] Detected - forcing showInitialForm to TRUE');
+          setShowInitialForm(true);
+          homeNavigationProcessedRef.current = true;
+          // Clear the flag after using it
+          localStorage.removeItem('career-trajectory-show-home');
+        } else if (!homeNavigationProcessedRef.current) {
+          console.log('[NORMAL LOAD] Setting showInitialForm from saved state:', parsed.showInitialForm);
+          setShowInitialForm(parsed.showInitialForm);
+        } else {
+          console.log('[SUBSEQUENT LOAD] Home navigation already processed, maintaining showInitialForm');
+        }
+      } else {
+        // No saved conversation, clear any stale flag
+        localStorage.removeItem('career-trajectory-show-home');
       }
     } catch (error) {
       console.error('Failed to load conversation state:', error);
@@ -438,6 +460,10 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
   }, []);
 
   const handleStartNewChat = () => {
+    setShowNewChatWarning(true);
+  };
+
+  const confirmStartNewChat = () => {
     // Clear conversation state and start fresh
     localStorage.removeItem(CONVERSATION_STORAGE_KEY);
     setContextId(null);
@@ -454,6 +480,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
     setUploadedFiles([]);
     setChatFiles([]);
     setShowInitialForm(true);
+    setShowNewChatWarning(false);
   };
 
   // Only show "conversation in progress" if there's a real saved conversation from a previous session
@@ -685,7 +712,8 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     onChange={(e) =>
                       setInitialFormData({ ...initialFormData, user_name: e.target.value })
                     }
-                    className="w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500"
+                    disabled={hasSavedConversation}
+                    className={`w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                     placeholder="Enter your name"
                     required
                     data-gramm="true"
@@ -703,7 +731,8 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                       onChange={(e) =>
                         setInitialFormData({ ...initialFormData, start_age: parseInt(e.target.value) })
                       }
-                      className="w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg"
+                      disabled={hasSavedConversation}
+                      className={`w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <option value={10}>10 (Middle School)</option>
                       <option value={14}>14 (High School)</option>
@@ -724,7 +753,8 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                       min={initialFormData.start_age + 4}
                       max={60}
                       placeholder="Maximum 60"
-                      className="w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg"
+                      disabled={hasSavedConversation}
+                      className={`w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                       required
                     />
                     <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -742,7 +772,8 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     onChange={(e) =>
                       setInitialFormData({ ...initialFormData, end_goal: e.target.value })
                     }
-                    className="w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg"
+                    disabled={hasSavedConversation}
+                    className={`w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                     placeholder="e.g., Get into MIT for Computer Science"
                     rows={3}
                     required
@@ -756,7 +787,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     Planning Detail Level
                   </label>
                   <div className="space-y-2">
-                    <label className="flex items-center cursor-pointer p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                    <label className={`flex items-center p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50'}`}>
                       <input
                         type="radio"
                         value={2}
@@ -764,11 +795,12 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                         onChange={(e) =>
                           setInitialFormData({ ...initialFormData, num_layers: parseInt(e.target.value) })
                         }
+                        disabled={hasSavedConversation}
                         className="mr-3"
                       />
                       <span className="text-neutral-900 dark:text-neutral-100">2 Layers</span>
                     </label>
-                    <label className="flex items-center cursor-pointer p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                    <label className={`flex items-center p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50'}`}>
                       <input
                         type="radio"
                         value={3}
@@ -776,6 +808,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                         onChange={(e) =>
                           setInitialFormData({ ...initialFormData, num_layers: parseInt(e.target.value) })
                         }
+                        disabled={hasSavedConversation}
                         className="mr-3"
                       />
                       <span className="text-neutral-900 dark:text-neutral-100">3 Layers</span>
@@ -789,7 +822,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     Upload Files (Optional)
                   </label>
                   <div className="space-y-2">
-                    <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors">
+                    <label className={`flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg transition-colors ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-600'}`}>
                       <div className="flex items-center space-x-2">
                         <svg className="w-5 h-5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -807,6 +840,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                             setUploadedFiles(Array.from(e.target.files));
                           }
                         }}
+                        disabled={hasSavedConversation}
                         className="hidden"
                       />
                     </label>
@@ -843,10 +877,14 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
 
                 <button
                   type="submit"
-                  disabled={isConversing}
-                  className="w-full bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:bg-neutral-400 text-white dark:text-neutral-900 font-medium py-3 px-6 rounded-lg"
+                  disabled={isConversing || hasSavedConversation}
+                  className={`w-full font-medium py-3 px-6 rounded-lg ${
+                    hasSavedConversation
+                      ? 'bg-neutral-400 cursor-not-allowed text-white'
+                      : 'bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:bg-neutral-400 text-white dark:text-neutral-900'
+                  }`}
                 >
-                  {isConversing ? 'Starting...' : 'Start Planning'}
+                  {isConversing ? 'Starting...' : hasSavedConversation ? 'Choose Continue or New Chat above' : 'Start Planning'}
                 </button>
               </form>
             </div>
@@ -1049,6 +1087,34 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
         onConfirm={handleGenerateConfirm}
         estimatedCost={0.0045} // TODO: Calculate based on actual usage
       />
+
+      {/* New Chat Warning Modal */}
+      {showNewChatWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+              Start New Conversation?
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+              You have a conversation in progress. Starting a new conversation will erase your current chat history and progress. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowNewChatWarning(false)}
+                className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-950 hover:bg-neutral-50 dark:hover:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-medium rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmStartNewChat}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Start New Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
