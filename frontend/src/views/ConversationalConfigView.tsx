@@ -794,7 +794,7 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                         : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100'
                     }`}
                   >
-                    <div className="[&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>strong]:font-bold [&>em]:italic [&>h1]:text-xl [&>h1]:font-bold [&>h2]:text-lg [&>h2]:font-bold [&>h3]:text-base [&>h3]:font-bold">
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_strong]:font-bold [&_strong]:font-semibold [&>em]:italic [&>h1]:text-xl [&>h1]:font-bold [&>h2]:text-lg [&>h2]:font-bold [&>h3]:text-base [&>h3]:font-bold">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {message.content}
                       </ReactMarkdown>
@@ -882,8 +882,8 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                     }
                   }}
                   placeholder="Type your message..."
-                  rows={1}
-                  className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 resize-y min-h-[42px] max-h-96"
+                  className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 resize-y min-h-[42px] max-h-96 overflow-auto"
+                  style={{ height: 'auto', minHeight: '42px' }}
                   disabled={isConversing || isGenerating}
                   data-gramm="true"
                   data-gramm-editor="true"
