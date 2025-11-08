@@ -169,8 +169,12 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
       // Calculate new height (distance from bottom of screen to mouse)
       const newHeight = windowHeight - e.clientY;
 
-      // Constrain between min and max
-      const constrainedHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
+      // Add padding from bottom to prevent overflow into dead space
+      const bottomPadding = 50; // 50px from bottom of screen
+      const adjustedMaxHeight = Math.min(maxHeight, windowHeight - bottomPadding);
+
+      // Constrain between min and adjusted max
+      const constrainedHeight = Math.min(Math.max(newHeight, minHeight), adjustedMaxHeight);
 
       setInputPanelHeight(constrainedHeight);
     };
