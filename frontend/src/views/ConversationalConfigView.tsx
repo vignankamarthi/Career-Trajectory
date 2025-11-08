@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { apiClient } from '../lib/api';
 import ErrorModal from '../components/ErrorModal';
 import GenerateConfirmationModal from '../components/GenerateConfirmationModal';
@@ -129,6 +129,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
         initialFormData,
       };
       localStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(stateToSave));
+      console.log('[PERSIST] STATE:', { showInitialForm, contextId: !!contextId, messagesCount: messages.length });
     }
   }, [contextId, messages, confidence, showInitialForm, isReadyToGenerate, initialFormData, isInitialized]);
 
@@ -228,6 +229,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
       return;
     }
 
+    console.log('[FORM] SUBMIT START');
     setIsConversing(true);
 
     try {
@@ -235,21 +237,21 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
         initialFormData,
         uploadedFiles.length > 0 ? uploadedFiles : undefined
       );
+
+      console.log('[FORM] API RESPONSE SUCCESS, beginning transition to chat');
+
+      // Simple state update - no complex transitions
       setContextId(response.context_id);
       setConfidence(response.confidence_score);
-
-      // ALWAYS enter chat (backend now always returns chat-ready state)
-      setShowInitialForm(false);
+      setMessages([{
+        role: 'assistant',
+        content: response.next_question,
+        timestamp: new Date().toISOString(),
+      }]);
       setIsReadyToGenerate(response.ready_for_generation || response.confidence_score >= 90);
+      console.log('[SUCCESS] ENTERING CHAT - setting showInitialForm to FALSE');
+      setShowInitialForm(false);
 
-      // Add first assistant message to chat
-      setMessages([
-        {
-          role: 'assistant',
-          content: response.next_question,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
     } catch (err: any) {
       // Handle UserError responses from backend
       if (err.response?.data?.type === 'user_error') {
@@ -264,6 +266,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
       }
     } finally {
       setIsConversing(false);
+      console.log('[FORM] SUBMIT COMPLETE');
     }
   };
 
@@ -416,16 +419,12 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
 
   const handleBackToHome = useCallback(() => {
     // Navigate back to home without clearing conversation state
-    console.log('handleBackToHome called, current showInitialForm:', showInitialForm);
+    console.log('handleBackToHome called - simple navigation');
     setShowInitialForm(true);
-    console.log('setShowInitialForm(true) called');
-  }, [showInitialForm]);
+  }, []);
 
-  // Register navigation function with parent component
-  useEffect(() => {
-    console.log('Registering navigation function with parent component');
-    onNavigateHome(handleBackToHome);
-  }, [onNavigateHome, handleBackToHome]);
+  // Note: Navigation registration disabled to fix infinite loop
+  // Home button now handled directly in App.tsx navigation logic
 
   // Notify parent when uploaded files change
   useEffect(() => {
@@ -433,10 +432,10 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
     onFilesChange(hasFiles);
   }, [uploadedFiles.length, chatFiles.length, showInitialForm, onFilesChange]);
 
-  const handleContinueChat = () => {
-    // Resume saved conversation
+  const handleContinueChat = useCallback(() => {
+    console.log('[CONTINUE] CHAT CLICKED - simple navigation');
     setShowInitialForm(false);
-  };
+  }, []);
 
   const handleStartNewChat = () => {
     // Clear conversation state and start fresh
@@ -457,8 +456,27 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
     setShowInitialForm(true);
   };
 
-  // Check if there's a saved conversation
-  const hasSavedConversation = contextId !== null && messages.length > 0;
+  // Only show "conversation in progress" if there's a real saved conversation from a previous session
+  // Don't show it if we just created the conversation in this session
+  const hasSavedConversation = useMemo(() => {
+    // Don't show during active conversation creation
+    if (isConversing) {
+      console.log('[SAVED_CONV] FALSE - conversing');
+      return false;
+    }
+
+    // Only show if we're on the initial form AND have existing conversation data
+    if (!showInitialForm || !contextId || messages.length === 0) {
+      console.log('[SAVED_CONV] FALSE - form conditions', { showInitialForm, hasContextId: !!contextId, messagesCount: messages.length });
+      return false;
+    }
+
+    // Additional check: only show if this is truly a restored conversation
+    // (i.e., the conversation was loaded from localStorage on mount)
+    const result = isInitialized && contextId !== null && messages.length > 0;
+    console.log('[SAVED_CONV] RESULT:', result, { isInitialized, hasContextId: !!contextId, messagesCount: messages.length });
+    return result;
+  }, [contextId, messages.length, showInitialForm, isConversing, isInitialized]);
 
   return (
     <div className="h-screen flex bg-neutral-50 dark:bg-neutral-950">

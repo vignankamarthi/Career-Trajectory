@@ -116,6 +116,7 @@ function App() {
 
   // Non-destructive navigation back to home (just navigation, no data reset)
   const handleNavigateHome = () => {
+    console.log('App handleNavigateHome called, current phase:', phase, 'chatNavigationRef exists:', !!chatNavigationRef);
     // For timeline page: just go back to configuration phase (keep timeline data)
     if (phase === 'timeline') {
       setPhase('configuration');
@@ -123,7 +124,10 @@ function App() {
     }
     // For chat page: call the navigation function if available
     if (chatNavigationRef) {
+      console.log('Calling chatNavigationRef function');
       chatNavigationRef();
+    } else {
+      console.log('No chatNavigationRef available');
     }
   };
 
