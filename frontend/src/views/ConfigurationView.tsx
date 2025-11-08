@@ -144,6 +144,8 @@ function ConfigurationView({ onTimelineCreated, selectedTier }: ConfigurationVie
               placeholder="e.g., Get into MIT for Computer Science, Become a cardiologist, Launch a startup"
               rows={3}
               required
+              data-gramm="true"
+              data-gramm-editor="true"
             />
             <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-light">
               Be specific about what you want to achieve by age {formData.end_age}

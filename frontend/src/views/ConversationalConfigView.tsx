@@ -89,6 +89,8 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
   const [timelines, setTimelines] = useState<TimelineItem[]>([]);
   const [trash, setTrash] = useState<TimelineItem[]>([]);
   const [activeView, setActiveView] = useState<'timelines' | 'trash'>('timelines');
+  const [inputPanelHeight, setInputPanelHeight] = useState(120); // Initial height in pixels
+  const [isResizing, setIsResizing] = useState(false);
 
   // Ref for auto-scroll
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -154,6 +156,43 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
   useEffect(() => {
     fetchHistory();
   }, []);
+
+  // Handle resize for input panel
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const windowHeight = window.innerHeight;
+      const maxHeight = windowHeight * 0.5; // 50% of screen height
+      const minHeight = 120; // Minimum height in pixels
+
+      // Calculate new height (distance from bottom of screen to mouse)
+      const newHeight = windowHeight - e.clientY;
+
+      // Constrain between min and max
+      const constrainedHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
+
+      setInputPanelHeight(constrainedHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing]);
 
   const fetchHistory = async () => {
     try {
@@ -826,8 +865,19 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
 
         {/* Input Area */}
         {!showInitialForm && (
-          <div className="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-4">
-            <div className="max-w-3xl mx-auto">
+          <div
+            className="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 flex flex-col"
+            style={{ height: `${inputPanelHeight}px` }}
+          >
+            {/* Resize Handle */}
+            <div
+              className="w-full h-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-ns-resize flex items-center justify-center group"
+              onMouseDown={() => setIsResizing(true)}
+            >
+              <div className="w-12 h-1 rounded-full bg-neutral-400 dark:bg-neutral-600 group-hover:bg-neutral-500 dark:group-hover:bg-neutral-500"></div>
+            </div>
+
+            <div className="w-full h-full flex flex-col px-4 pb-4 pt-2">
               {/* Selected Chat Files Display */}
               {chatFiles.length > 0 && (
                 <div className="mb-3 space-y-1">
@@ -852,62 +902,67 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                 </div>
               )}
 
-              <div className="flex gap-2 items-end">
-                {/* File Upload Button */}
-                <label className="cursor-pointer p-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 rounded-lg transition-colors">
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
-                    onChange={(e) => {
-                      if (e.target.files) {
-                        setChatFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+              <div className="flex flex-col gap-3 flex-1">
+                {/* Textarea section that expands */}
+                <div className="flex gap-2 items-start flex-1">
+                  {/* File Upload Button */}
+                  <label className="cursor-pointer p-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 rounded-lg transition-colors">
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setChatFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+                        }
+                      }}
+                      className="hidden"
+                      disabled={isConversing || isGenerating}
+                    />
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                  </label>
+
+                  <textarea
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
                       }
                     }}
-                    className="hidden"
+                    placeholder="Type your message..."
+                    className="flex-1 h-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 resize-none overflow-auto"
                     disabled={isConversing || isGenerating}
+                    data-gramm="true"
+                    data-gramm-editor="true"
                   />
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                  </svg>
-                </label>
+                </div>
 
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder="Type your message..."
-                  className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 resize-y min-h-[42px] max-h-96 overflow-auto"
-                  style={{ height: 'auto', minHeight: '42px' }}
-                  disabled={isConversing || isGenerating}
-                  data-gramm="true"
-                  data-gramm-editor="true"
-                />
+                {/* Buttons section - centered */}
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isConversing || isGenerating}
+                    className="px-6 py-2.5 bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:bg-neutral-400 text-white dark:text-neutral-900 font-medium rounded-lg"
+                  >
+                    Send
+                  </button>
 
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isConversing || isGenerating}
-                  className="px-6 py-2.5 bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:bg-neutral-400 text-white dark:text-neutral-900 font-medium rounded-lg"
-                >
-                  Send
-                </button>
-
-                <button
-                  onClick={handleGenerateClick}
-                  disabled={!isReadyToGenerate || isGenerating || confidence < 90}
-                  className={`px-6 py-2.5 font-medium rounded-lg transition-all ${
-                    confidence >= 90
-                      ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/50'
-                      : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400'
-                  }`}
-                >
-                  {isGenerating ? 'Generating...' : 'Generate Timeline'}
-                </button>
+                  <button
+                    onClick={handleGenerateClick}
+                    disabled={!isReadyToGenerate || isGenerating || confidence < 90}
+                    className={`px-6 py-2.5 font-medium rounded-lg transition-all ${
+                      confidence >= 90
+                        ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/50'
+                        : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400'
+                    }`}
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Timeline'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

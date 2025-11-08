@@ -14,3 +14,18 @@ body {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 300;
 }
+
+/* Make textarea resize handle always visible */
+textarea {
+  resize: vertical !important;
+}
+
+textarea::-webkit-resizer {
+  border: 2px solid #a3a3a3;
+  background: #d4d4d4;
+  border-radius: 2px;
+}
+
+textarea::-webkit-resizer:hover {
+  background: #a3a3a3;
+}
