@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '../lib/api';
 import ErrorModal from '../components/ErrorModal';
 import GenerateConfirmationModal from '../components/GenerateConfirmationModal';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /**
  * Conversational Configuration View
@@ -772,7 +774,23 @@ function ConversationalConfigView({ onTimelineCreated }: ConversationalConfigVie
                         : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-1 prose-strong:font-bold prose-headings:mt-3 prose-headings:mb-2"
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-5 mb-2">{children}</ol>,
+                        li: ({ children }) => <li className="mb-1">{children}</li>,
+                        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        h1: ({ children }) => <h1 className="text-xl font-bold mt-3 mb-2">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-lg font-bold mt-3 mb-2">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-base font-bold mt-2 mb-1">{children}</h3>,
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
                   </div>
                 </div>
               ))}
