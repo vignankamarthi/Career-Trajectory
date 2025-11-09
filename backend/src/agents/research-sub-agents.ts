@@ -6,8 +6,13 @@
 import axios from 'axios';
 import { traceable } from 'langsmith/traceable';
 
-const PARALLEL_API_KEY = process.env.PARALLEL_API_KEY || 'uZWvh4oz6AG6XKW2c04OawxgqiJXXkKhq5kWwOpN';
-const PARALLEL_API_URL = 'https://api.parallel.ai/v1/research';
+// Load Parallel AI API key from environment (required for research features)
+const PARALLEL_API_KEY = process.env.PARALLEL_API_KEY;
+if (!PARALLEL_API_KEY) {
+  throw new Error('PARALLEL_API_KEY environment variable is required for research functionality');
+}
+
+const PARALLEL_API_URL = 'https://api.parallel.ai/v1/tasks/runs';
 
 // Research processor tiers
 enum ResearchProcessor {
@@ -48,14 +53,15 @@ export const UniversityResearchAgent = traceable(
       const response = await axios.post(
         PARALLEL_API_URL,
         {
-          query,
+          input: query,
           processor: ResearchProcessor.PRO,
-          format: 'structured',
-          confidence_threshold: 0.8
+          task_spec: {
+            output_schema: 'Structured research results with specific university programs, admission requirements, deadlines, and recommendations'
+          }
         },
         {
           headers: {
-            'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+            'x-api-key': PARALLEL_API_KEY,
             'Content-Type': 'application/json'
           }
         }
@@ -118,13 +124,15 @@ export const CareerPathResearchAgent = traceable(
       const response = await axios.post(
         PARALLEL_API_URL,
         {
-          query,
+          input: query,
           processor: ResearchProcessor.BASE,
-          format: 'detailed'
+          task_spec: {
+            output_schema: 'Career path analysis with job market trends, salary data, skill requirements, and career progression paths'
+          }
         },
         {
           headers: {
-            'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+            'x-api-key': PARALLEL_API_KEY,
             'Content-Type': 'application/json'
           }
         }
@@ -186,13 +194,15 @@ export const SkillsGapAnalysisAgent = traceable(
       const response = await axios.post(
         PARALLEL_API_URL,
         {
-          query,
+          input: query,
           processor: ResearchProcessor.LITE,
-          format: 'actionable'
+          task_spec: {
+            output_schema: 'Skills gap analysis with missing skills, learning resources, timelines, and actionable recommendations'
+          }
         },
         {
           headers: {
-            'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+            'x-api-key': PARALLEL_API_KEY,
             'Content-Type': 'application/json'
           }
         }
@@ -255,13 +265,15 @@ export const TimelineOptimizationAgent = traceable(
       const response = await axios.post(
         PARALLEL_API_URL,
         {
-          query,
+          input: query,
           processor: ResearchProcessor.PRO,
-          format: 'strategic'
+          task_spec: {
+            output_schema: 'Timeline optimization recommendations with compression opportunities, risk mitigation, parallel paths, and success metrics'
+          }
         },
         {
           headers: {
-            'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+            'x-api-key': PARALLEL_API_KEY,
             'Content-Type': 'application/json'
           }
         }
@@ -297,19 +309,20 @@ export const TimelineOptimizationAgent = traceable(
  * For fast, simple lookups (auto-approved, no user confirmation needed)
  */
 export const QuickResearchAgent = traceable(
-  async function quickResearch(query: string) {
+  async function quickResearch(params: { query: string }) {
     try {
       const response = await axios.post(
         PARALLEL_API_URL,
         {
-          query,
+          input: params.query,
           processor: ResearchProcessor.LITE,
-          format: 'concise',
-          max_response_length: 500
+          task_spec: {
+            output_schema: 'Concise research answer with key facts and actionable information'
+          }
         },
         {
           headers: {
-            'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+            'x-api-key': PARALLEL_API_KEY,
             'Content-Type': 'application/json'
           },
           timeout: 60000 // 60 second timeout

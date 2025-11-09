@@ -233,7 +233,7 @@ Remember: All blocks must fit within the timeline and respect duration bounds fo
 
     Logger.info('Timeline structure generated successfully', {
       layers: timeline.layers.length,
-      totalBlocks: timeline.layers.reduce((sum, layer) => sum + layer.blocks.length, 0),
+      totalBlocks: timeline.layers.reduce((sum: number, layer: GeneratedLayer) => sum + layer.blocks.length, 0),
       generationCost,
       validationCost: validationResult.cost,
       totalCost: generationCost + validationResult.cost,
@@ -576,7 +576,7 @@ Call the generate_timeline tool with a "layers" array containing ${config.num_la
       confidence_score,
       is_confident,
       layers: layers?.length || 0,
-      totalBlocks: layers?.reduce((sum, layer) => sum + (layer.blocks?.length || 0), 0) || 0,
+      totalBlocks: layers?.reduce((sum: number, layer: GeneratedLayer) => sum + (layer.blocks?.length || 0), 0) || 0,
       cost: response.cost,
     });
 
@@ -619,7 +619,7 @@ Call the generate_timeline tool with a "layers" array containing ${config.num_la
     // Build attention object
     const attention: ConfigurationAttention = {
       confidence_score,
-      generated_structure: `Successfully generated ${layers?.length || 0} timeline layers with ${layers?.reduce((sum, layer) => sum + (layer.blocks?.length || 0), 0) || 0} total blocks`,
+      generated_structure: `Successfully generated ${layers?.length || 0} timeline layers with ${layers?.reduce((sum: number, layer: GeneratedLayer) => sum + (layer.blocks?.length || 0), 0) || 0} total blocks`,
       challenging_blocks: [],
       assumptions_made: [],
     };

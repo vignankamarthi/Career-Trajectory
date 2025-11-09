@@ -28,12 +28,14 @@ import {
 // ============================================================================
 export enum ResearchProcessor {
   LITE = 'lite',        // 5-60s, $0.005 - Quick facts, definitions
-  BASE = 'base',        // 30s-2m, $0.02 - Standard research
-  PRO = 'pro',          // 1-3m, $0.10 - Default tier, balanced cost/quality
-  ULTRA = 'ultra',      // 2-5m, $0.30 - Deep research
-  ULTRA2X = 'ultra2x',  // 3-7m, $0.60 - Extended deep research
-  ULTRA4X = 'ultra4x',  // 5-10m, $1.20 - Comprehensive research
-  ULTRA8X = 'ultra8x'   // 10-20m, $2.40 - Maximum depth research
+  BASE = 'base',        // 15s-100s, $0.01 - Standard research
+  CORE = 'core',        // 1-5m, $0.025 - Cross-referenced, moderately complex
+  CORE2X = 'core2x',    // 2-5m, $0.05 - High complexity cross-referenced
+  PRO = 'pro',          // 3-9m, $0.10 - Default tier, balanced cost/quality
+  ULTRA = 'ultra',      // 5-25m, $0.30 - Deep research
+  ULTRA2X = 'ultra2x',  // 5-25m, $0.60 - Extended deep research
+  ULTRA4X = 'ultra4x',  // 8-30m, $1.20 - Comprehensive research
+  ULTRA8X = 'ultra8x'   // 8-30m, $2.40 - Maximum depth research
 }
 
 // ============================================================================
@@ -68,11 +70,13 @@ export interface ResearchTask {
 const PROCESSOR_TIMEOUTS = {
   [ResearchProcessor.LITE]: 60,      // 1 minute max
   [ResearchProcessor.BASE]: 120,     // 2 minutes max
-  [ResearchProcessor.PRO]: 180,      // 3 minutes max
-  [ResearchProcessor.ULTRA]: 300,    // 5 minutes max
-  [ResearchProcessor.ULTRA2X]: 420,  // 7 minutes max
-  [ResearchProcessor.ULTRA4X]: 600,  // 10 minutes max
-  [ResearchProcessor.ULTRA8X]: 1200  // 20 minutes max
+  [ResearchProcessor.CORE]: 300,     // 5 minutes max
+  [ResearchProcessor.CORE2X]: 300,   // 5 minutes max
+  [ResearchProcessor.PRO]: 600,      // 10 minutes max
+  [ResearchProcessor.ULTRA]: 1500,   // 25 minutes max
+  [ResearchProcessor.ULTRA2X]: 1500, // 25 minutes max
+  [ResearchProcessor.ULTRA4X]: 1800, // 30 minutes max
+  [ResearchProcessor.ULTRA8X]: 1800  // 30 minutes max
 };
 
 // ============================================================================
@@ -179,17 +183,16 @@ class ParallelMCPService {
           // University-focused research: programs, admissions, funding
           results = await UniversityResearchAgent({
             goal: query,
-            fieldOfStudy: query,
-            processor
+            fieldOfStudy: query
           });
           break;
 
         case 'career':
           // Career path research: job market, salaries, progression
           results = await CareerPathResearchAgent({
-            goal: query,
-            currentRole: 'current',
-            processor
+            targetRole: query,
+            currentSkills: [],
+            yearsOfExperience: 0
           });
           break;
 
@@ -198,25 +201,23 @@ class ParallelMCPService {
           results = await SkillsGapAnalysisAgent({
             currentSkills: [],
             targetRole: query,
-            processor
+            timeframe: '1 year'
           });
           break;
 
         case 'timeline':
           // Timeline optimization: milestones, dependencies, risks
           results = await TimelineOptimizationAgent({
-            goal: query,
-            currentProgress: 'starting',
-            timeConstraints: '',
-            processor
+            blocks: [],
+            constraints: [],
+            priorities: [],
+            riskTolerance: 'medium'
           });
           break;
 
         case 'quick':
           // Quick lookups: always uses LITE tier, auto-approved
-          results = await QuickResearchAgent({
-            query
-          });
+          results = await QuickResearchAgent({ query });
           break;
 
         default:

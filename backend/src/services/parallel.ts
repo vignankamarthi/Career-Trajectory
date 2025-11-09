@@ -19,7 +19,7 @@ const PARALLEL_API_KEY = process.env.PARALLEL_API_KEY;
 const PROCESSORS = {
   BASE: 'base',
   PRO: 'pro',
-};
+} as const;
 
 const PRICING = {
   [PROCESSORS.BASE]: 0.005, // $0.005 per query (faster, lighter)

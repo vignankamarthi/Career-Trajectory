@@ -19,7 +19,10 @@ import { traceable, getCurrentRunTree } from 'langsmith/traceable';
 /**
  * Configuration Agent with LangSmith tracing
  */
-export const tracedConfigurationAgent = traceable(
+export const tracedConfigurationAgent: (
+  userConfig: any,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function generateTimeline(
     userConfig: any,
     anthropicFn: () => Promise<any>
@@ -54,7 +57,11 @@ export const tracedConfigurationAgent = traceable(
 /**
  * Conversational Assistant with LangSmith tracing
  */
-export const tracedConversationalAssistant = traceable(
+export const tracedConversationalAssistant: (
+  timelineId: string,
+  messageCount: number,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function chat(
     timelineId: string,
     messageCount: number,
@@ -90,7 +97,11 @@ export const tracedConversationalAssistant = traceable(
 /**
  * Internal Agent with LangSmith tracing
  */
-export const tracedInternalAgent = traceable(
+export const tracedInternalAgent: (
+  operation: string,
+  timelineId: string,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function internalOperation(
     operation: string,
     timelineId: string,
@@ -107,7 +118,11 @@ export const tracedInternalAgent = traceable(
 /**
  * Parallel AI Research with LangSmith tracing
  */
-export const tracedParallelResearch = traceable(
+export const tracedParallelResearch: (
+  blockId: string,
+  blockTitle: string,
+  researchFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function researchBlock(
     blockId: string,
     blockTitle: string,
@@ -124,7 +139,10 @@ export const tracedParallelResearch = traceable(
 /**
  * Pre-Validation Agent with LangSmith tracing
  */
-export const tracedPreValidationAgent = traceable(
+export const tracedPreValidationAgent: (
+  context: any,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function analyzeInitialInput(
     context: any,
     anthropicFn: () => Promise<any>
@@ -159,7 +177,10 @@ export const tracedPreValidationAgent = traceable(
 /**
  * Conversational Clarification Agent with LangSmith tracing
  */
-export const tracedConversationalClarificationAgent = traceable(
+export const tracedConversationalClarificationAgent: (
+  context: any,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function gatherClarifications(
     context: any,
     anthropicFn: () => Promise<any>
@@ -194,7 +215,10 @@ export const tracedConversationalClarificationAgent = traceable(
 /**
  * Internal Review Agent with LangSmith tracing
  */
-export const tracedInternalReviewAgent = traceable(
+export const tracedInternalReviewAgent: (
+  context: any,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function reviewBeforeGeneration(
     context: any,
     anthropicFn: () => Promise<any>
@@ -210,7 +234,10 @@ export const tracedInternalReviewAgent = traceable(
 /**
  * Validation Agent with LangSmith tracing
  */
-export const tracedValidationAgent = traceable(
+export const tracedValidationAgent: (
+  input: any,
+  anthropicFn: () => Promise<any>
+) => Promise<any> = traceable(
   async function validateAndCorrect(
     input: any,
     anthropicFn: () => Promise<any>

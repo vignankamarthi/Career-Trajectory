@@ -19,7 +19,10 @@ import Logger from '../utils/logger';
  * Main Timeline Generation Workflow
  * Creates ONE parent trace with all agents as child spans
  */
-export const timelineGenerationWorkflow = traceable(
+export const timelineGenerationWorkflow: (
+  context: any,
+  confidence_threshold?: number
+) => Promise<any> = traceable(
   async (context: any, confidence_threshold: number = 90) => {
     Logger.info('Starting timeline generation workflow', {
       context_id: context.workflow?.context_id,
@@ -61,8 +64,11 @@ const wrappedValidationAgent = traceable(
  * Wrapped Clarification Agent
  * Creates child span for clarification step
  */
-const wrappedClarificationAgent = traceable(
-  async (context: any, clarificationQuestions: any[]) => {
+const wrappedClarificationAgent: (
+  context: any,
+  clarificationQuestions: any
+) => Promise<any> = traceable(
+  async (context: any, clarificationQuestions: any) => {
     Logger.info('Running clarification agent');
     return await gatherClarifications(context, clarificationQuestions);
   },

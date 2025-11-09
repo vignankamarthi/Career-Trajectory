@@ -46,7 +46,7 @@ export async function extractPDFText(filePath: string): Promise<string> {
                 media_type: 'application/pdf',
                 data: base64Pdf,
               },
-            },
+            } as any, // Document type is supported by API but not yet in TS types
             {
               type: 'text',
               text: 'Extract all text content from this PDF document. Return only the extracted text, no additional commentary.',
@@ -65,9 +65,8 @@ export async function extractPDFText(filePath: string): Promise<string> {
 
     return extractedText.trim();
   } catch (error) {
-    Logger.error('Failed to extract PDF text', {
+    Logger.error('Failed to extract PDF text', error instanceof Error ? error : undefined, {
       path: filePath,
-      error: error instanceof Error ? error.message : String(error),
     });
     throw error;
   }
@@ -128,9 +127,8 @@ export async function extractFileContent(
     }
   } catch (error) {
     result.error = error instanceof Error ? error.message : String(error);
-    Logger.error('File extraction failed', {
+    Logger.error('File extraction failed', error instanceof Error ? error : undefined, {
       file: file.originalname,
-      error: result.error,
     });
   }
 

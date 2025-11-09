@@ -93,25 +93,41 @@ function App() {
   }, [lastMessage]);
 
   const handleTimelineCreated = (id: string) => {
+    console.log('[APP NAV] Timeline created, entering Timeline View. Clearing conversation.');
+    // Clear conversation when ENTERING timeline view
+    localStorage.removeItem('career-trajectory-conversation');
     setTimelineId(id);
     setPhase('timeline');
   };
 
   const handleResetTimeline = () => {
+    console.log('[APP NAV] Navigating from Timeline View to Home. Preserving conversation.');
+    // DO NOT clear conversation - user might have an in-progress chat
     setTimelineId(null);
     setPhase('configuration');
-    // Clear conversation state when resetting to configuration
-    localStorage.removeItem('career-trajectory-conversation');
   };
 
   // Note: chatNavigationRef removed - now using direct navigation control
   const [hasUploadedFiles, setHasUploadedFiles] = useState(false);
+  const [chatNavigationHandler, setChatNavigationHandler] = useState<(() => void) | null>(null);
 
-  // Navigate back to home - same as resetting timeline
+  // Navigate back to home
   const handleNavigateHome = () => {
-    console.log('App handleNavigateHome called, current phase:', phase);
-    // Reset to configuration phase and clear conversation state
-    handleResetTimeline();
+    console.log('[APP NAV] Home button clicked. Current phase:', phase, 'Has chat handler:', !!chatNavigationHandler);
+
+    if (phase === 'configuration') {
+      // Already in configuration phase (either on Home page or Chat interface)
+      if (chatNavigationHandler) {
+        console.log('[APP NAV] Calling chat navigation handler to return to Home page');
+        chatNavigationHandler();
+      } else {
+        console.log('[APP NAV] Already on Home page or chat handler not registered yet');
+      }
+    } else {
+      // In timeline phase: Navigate back to Home (configuration phase)
+      console.log('[APP NAV] Returning to Home from Timeline View');
+      handleResetTimeline();
+    }
   };
 
   const handleDismissNotification = (index: number) => {
@@ -131,6 +147,7 @@ function App() {
             {phase === 'configuration' ? (
               <ConversationalConfigView
                 onTimelineCreated={handleTimelineCreated}
+                onNavigateHome={setChatNavigationHandler}
                 onFilesChange={setHasUploadedFiles}
               />
             ) : (

@@ -35,7 +35,7 @@ function initializeDatabase(): Database.Database {
 }
 
 // Create and export database instance
-export const db = initializeDatabase();
+export const db: ReturnType<typeof initializeDatabase> = initializeDatabase();
 
 /**
  * Execute a query with logging and error handling

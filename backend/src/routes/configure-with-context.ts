@@ -24,9 +24,117 @@ import { AgentContext, ConversationMessage } from '../types/agent-context';
 import { UserError, ValidationErrors } from '../utils/user-errors';
 import { processUploadedFiles } from '../utils/pdf-extractor';
 import { timelineGenerationWorkflow } from '../services/tracing';
+import parallelMCPService, { ResearchProcessor } from '../services/parallel-mcp';
 
 const router = express.Router();
 
+// ============================================================================
+// RESEARCH INTEGRATION HELPERS
+// ============================================================================
+
+/**
+ * Determine if a block should trigger automated research
+ * Strategy: Research Layer 1 (strategic) and selective Layer 2 (tactical)
+ * Skip Layer 3 (too granular for research ROI)
+ */
+function shouldResearchBlock(blockTitle: string, layerNumber: number): boolean {
+  // Layer 1 (strategic phases): Always research major life phases
+  if (layerNumber === 1) return true;
+
+  // Layer 2 (tactical milestones): Research education/career milestones only
+  if (layerNumber === 2) {
+    const researchKeywords = ['university', 'college', 'degree', 'career', 'job', 'position', 'skill', 'certification', 'program'];
+    return researchKeywords.some(keyword => blockTitle.toLowerCase().includes(keyword));
+  }
+
+  // Layer 3 (execution): Skip (too granular, low research value)
+  return false;
+}
+
+/**
+ * Map block title to appropriate research agent type
+ */
+function determineResearchType(blockTitle: string): 'university' | 'career' | 'skills' | 'timeline' | 'quick' {
+  const lower = blockTitle.toLowerCase();
+
+  // University/education research
+  if (lower.includes('university') || lower.includes('college') || lower.includes('degree') || lower.includes('graduate')) {
+    return 'university';
+  }
+
+  // Career/job research
+  if (lower.includes('career') || lower.includes('job') || lower.includes('position') || lower.includes('work')) {
+    return 'career';
+  }
+
+  // Skills/learning research
+  if (lower.includes('skill') || lower.includes('learn') || lower.includes('study') || lower.includes('certif')) {
+    return 'skills';
+  }
+
+  // Timeline optimization (for strategic planning blocks)
+  if (lower.includes('plan') || lower.includes('strategy') || lower.includes('transition')) {
+    return 'timeline';
+  }
+
+  // Default: Quick research for everything else
+  return 'quick';
+}
+
+/**
+ * Build natural language research query from block context
+ */
+function buildResearchQuery(block: any, context: AgentContext): string {
+  const { user_name, end_goal, start_age, end_age } = context.user_config;
+
+  return `Research: ${block.title}
+
+Context:
+- User: ${user_name}
+- Goal: ${end_goal}
+- Timeline: Age ${start_age} to ${end_age}
+- Current block: ${block.description || 'No description provided'}
+
+Please provide specific, actionable information including:
+- Key requirements and prerequisites
+- Recommended resources and institutions
+- Timeline considerations
+- Common pitfalls to avoid
+- Success metrics`;
+}
+
+/**
+ * Get research processor tier from user configuration
+ */
+function getResearchProcessor(context: AgentContext): ResearchProcessor {
+  const userPreference = context.user_config.global_research_model;
+
+  // Map user preference to ResearchProcessor enum
+  switch (userPreference) {
+    case 'lite':
+      return ResearchProcessor.LITE;
+    case 'base':
+      return ResearchProcessor.BASE;
+    case 'core':
+      return ResearchProcessor.CORE;
+    case 'core2x':
+      return ResearchProcessor.CORE2X;
+    case 'ultra':
+      return ResearchProcessor.ULTRA;
+    case 'ultra2x':
+      return ResearchProcessor.ULTRA2X;
+    case 'ultra4x':
+      return ResearchProcessor.ULTRA4X;
+    case 'ultra8x':
+      return ResearchProcessor.ULTRA8X;
+    case 'pro':
+    default:
+      // Default to PRO for quality research
+      return ResearchProcessor.PRO; // 1-3m, $0.10 - Balanced quality/cost
+  }
+}
+
+// ============================================================================
 // CONCURRENCY CONTROL: Prevent multiple timeline generations from running simultaneously
 const activeGenerations = new Set<string>();
 
@@ -501,7 +609,7 @@ router.post('/generate', async (req: Request, res: Response) => {
 
     // Run Timeline Generation Workflow (hierarchical tracing)
     Logger.info('Running Timeline Generation Workflow', {
-      context_id: context.workflow?.context_id,
+      context_id,
       confidence_threshold: confidence_threshold || 90,
     });
     const configResult = await timelineGenerationWorkflow(context, confidence_threshold);
@@ -542,6 +650,43 @@ router.post('/generate', async (req: Request, res: Response) => {
           'INSERT INTO blocks (id, layer_id, layer_number, position, title, description, start_age, end_age, duration_years) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [block_id, layer_id, layer.layer_number, 0, block.title, block.description || '', block.start_age, block.end_age, block.duration_years]
         );
+
+        // ========================================================================
+        // RESEARCH INTEGRATION: Spawn async research for qualifying blocks
+        // ========================================================================
+        // Background: Research infrastructure (ParallelMCPService, WebSocket, UI)
+        // was fully built but disconnected after integration issues. Now reconnected.
+        // Research runs async (non-blocking) with real-time WebSocket notifications.
+        // ========================================================================
+        if (shouldResearchBlock(block.title, layer.layer_number)) {
+          try {
+            const researchType = determineResearchType(block.title);
+            const processor = getResearchProcessor(context);
+
+            // Fire-and-forget: Returns immediately, research runs in background
+            await parallelMCPService.createResearchTask({
+              blockId: block_id,
+              blockTitle: block.title,
+              query: buildResearchQuery(block, context),
+              processor,
+              researchType
+            });
+
+            Logger.info('[ResearchIntegration] Spawned research task', {
+              blockId: block_id,
+              blockTitle: block.title,
+              layerNumber: layer.layer_number,
+              researchType,
+              processor
+            });
+          } catch (error) {
+            // Non-fatal: Research failure doesn't block timeline generation
+            Logger.error('[ResearchIntegration] Failed to spawn research task', error as Error, {
+              blockId: block_id,
+              blockTitle: block.title
+            });
+          }
+        }
       }
     }
 

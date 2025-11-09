@@ -55,7 +55,7 @@ export class UserError extends Error {
     this.code = code;
 
     // IMPORTANT: UserErrors ARE logged (but logs are NOT shown to users)
-    Logger.error('User-facing error occurred', {
+    Logger.error('User-facing error occurred', undefined, {
       severity: this.severity,
       userMessage: this.userMessage,
       field: this.field,

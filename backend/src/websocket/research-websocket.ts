@@ -42,7 +42,7 @@ export class ResearchWebSocketServer {
             ws.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
           }
         } catch (error) {
-          Logger.error('[WebSocket] Error parsing message', error);
+          Logger.error('[WebSocket] Error parsing message', error instanceof Error ? error : undefined);
         }
       });
 
@@ -149,7 +149,7 @@ export class ResearchWebSocketServer {
         try {
           client.send(message);
         } catch (error) {
-          Logger.error('[WebSocket] Error sending to client', error);
+          Logger.error('[WebSocket] Error sending to client', error instanceof Error ? error : undefined);
         }
       }
     });

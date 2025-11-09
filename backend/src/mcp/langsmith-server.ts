@@ -120,18 +120,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
+    if (!args) {
+      throw new Error('Missing required arguments');
+    }
+
     switch (name) {
       case 'list_recent_traces':
-        return await listRecentTraces(args.limit || 10, args.agent_name);
+        return await listRecentTraces((args.limit as number) || 10, args.agent_name as string);
 
       case 'get_trace_details':
-        return await getTraceDetails(args.trace_id);
+        return await getTraceDetails(args.trace_id as string);
 
       case 'analyze_agent_performance':
-        return await analyzeAgentPerformance(args.agent_name, args.time_range || '24h');
+        return await analyzeAgentPerformance(args.agent_name as string, (args.time_range as string) || '24h');
 
       case 'search_traces_by_error':
-        return await searchTracesByError(args.limit || 10);
+        return await searchTracesByError((args.limit as number) || 10);
 
       default:
         throw new Error(`Unknown tool: ${name}`);

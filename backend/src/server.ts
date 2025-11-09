@@ -95,7 +95,6 @@ import blocksRouter from './routes/blocks'; // Block-level operations
 import chatRouter from './routes/chat'; // Conversational editing
 import saveRouter from './routes/save'; // Save with research modes
 import analyzeRouter from './routes/analyze'; // Pre-validation analysis
-import testResearchRouter from './routes/test-research'; // Research sub-agent testing
 
 // ============================================================================
 // API ROUTE REGISTRATION
@@ -109,7 +108,6 @@ app.use('/api/blocks', blocksRouter); // GET, PUT blocks
 app.use('/api/chat', chatRouter); // POST /:timelineId - conversational editing
 app.use('/api/save', saveRouter); // POST / - save with lite/refactor modes
 app.use('/api/analyze', analyzeRouter); // POST / - pre-validation only
-app.use('/api/test', testResearchRouter); // POST /research - research agent testing
 
 // ============================================================================
 // ERROR HANDLING MIDDLEWARE

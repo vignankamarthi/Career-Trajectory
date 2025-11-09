@@ -230,7 +230,10 @@ export async function sendMessageJSON<T>(
         {
           name: schema.name,
           description: schema.description,
-          input_schema: schema.schema,
+          input_schema: {
+            type: 'object' as const,
+            ...schema.schema,
+          },
         },
       ],
       tool_choice: { type: 'tool', name: schema.name },
@@ -262,7 +265,7 @@ export async function sendMessageJSON<T>(
     // DEBUG: Log what we extracted from tool_use
     Logger.info('sendMessageJSON extracted tool data', {
       toolUseName: toolUse.name,
-      inputKeys: Object.keys(toolUse.input),
+      inputKeys: toolUse.input && typeof toolUse.input === 'object' ? Object.keys(toolUse.input) : [],
       inputContent: JSON.stringify(toolUse.input, null, 2)
     });
 
@@ -280,7 +283,7 @@ export async function sendMessageJSON<T>(
       provider: 'anthropic',
       role: 'configuration',
       prompt: messages,
-      response: data,
+      response: data as Record<string, any>,
       tokens: { input: inputTokens, output: outputTokens },
       cost,
       duration,

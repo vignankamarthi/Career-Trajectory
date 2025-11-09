@@ -17,7 +17,7 @@ import remarkGfm from 'remark-gfm';
 
 interface ConversationalConfigViewProps {
   onTimelineCreated: (timelineId: string) => void;
-  onNavigateHome: (navigationFn: () => void) => void;
+  onNavigateHome: (navigationFn: (() => void) | null) => void;
   onFilesChange: (hasFiles: boolean) => void;
 }
 
@@ -138,6 +138,11 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
       setIsInitialized(true);
     }
   }, []);
+
+  // Track showInitialForm changes
+  useEffect(() => {
+    console.log('[CHAT STATE] showInitialForm changed to:', showInitialForm);
+  }, [showInitialForm]);
 
   // Save conversation state to localStorage whenever it changes
   useEffect(() => {
@@ -441,12 +446,20 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
 
   const handleBackToHome = useCallback(() => {
     // Navigate back to home without clearing conversation state
-    console.log('handleBackToHome called - simple navigation');
+    console.log('[CHAT NAV] handleBackToHome called - returning to Home page (showInitialForm = true)');
     setShowInitialForm(true);
   }, []);
 
-  // Note: Navigation registration disabled to fix infinite loop
-  // Home button now handled directly in App.tsx navigation logic
+  // Register navigation handler with parent
+  useEffect(() => {
+    console.log('[CHAT NAV] Registering navigation handler with App');
+    onNavigateHome(handleBackToHome);
+    // Cleanup: unregister when component unmounts
+    return () => {
+      console.log('[CHAT NAV] Unregistering navigation handler from App');
+      onNavigateHome(null);
+    };
+  }, [handleBackToHome, onNavigateHome]);
 
   // Notify parent when uploaded files change
   useEffect(() => {
@@ -455,7 +468,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
   }, [uploadedFiles.length, chatFiles.length, onFilesChange]);
 
   const handleContinueChat = useCallback(() => {
-    console.log('[CONTINUE] CHAT CLICKED - simple navigation');
+    console.log('[CHAT NAV] Continue Chat clicked - entering Chat interface (showInitialForm = false)');
     setShowInitialForm(false);
   }, []);
 
@@ -464,6 +477,7 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
   };
 
   const confirmStartNewChat = () => {
+    console.log('[CHAT NAV] Start New Chat confirmed - clearing conversation and resetting to Home');
     // Clear conversation state and start fresh
     localStorage.removeItem(CONVERSATION_STORAGE_KEY);
     setContextId(null);

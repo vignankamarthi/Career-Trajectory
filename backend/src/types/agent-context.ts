@@ -18,6 +18,7 @@ export interface UserConfig {
   end_age: number;
   end_goal: string;
   num_layers: number;
+  global_research_model?: 'lite' | 'base' | 'core' | 'core2x' | 'pro' | 'ultra' | 'ultra2x' | 'ultra4x' | 'ultra8x';
 }
 
 /**
