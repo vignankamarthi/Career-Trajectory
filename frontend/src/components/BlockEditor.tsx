@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Block, apiClient } from '../lib/api';
-import { useResearchTier } from '../contexts/ResearchTierContext';
 
 interface BlockEditorProps {
   block: Block;
@@ -11,12 +10,8 @@ interface BlockEditorProps {
 /**
  * Modal for editing block details
  * - Edit title, description, notes, status
- * - Research block
- * - Display research results
  */
 function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
-  const { selectedTier, getTierInfo } = useResearchTier();
-
   const [formData, setFormData] = useState({
     title: block.title,
     description: block.description || '',
@@ -24,34 +19,8 @@ function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
     status: block.status || 'not_started',
   });
 
-  const [isResearching, setIsResearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [researchResults, setResearchResults] = useState<any | null>(null);
-
-  const selectedTierInfo = getTierInfo(selectedTier);
-
-  // Parse existing research data if available
-  const existingResearch = block.research_data
-    ? JSON.parse(block.research_data)
-    : null;
-
-  const handleResearch = async (type: 'quick' | 'deep') => {
-    setIsResearching(true);
-    setError(null);
-
-    // Quick = always LITE, Deep = user's selected tier
-    const processor = type === 'quick' ? 'lite' : selectedTier;
-
-    try {
-      const result = await apiClient.blocks.research(block.id!, processor as any);
-      setResearchResults(result.research);
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Research failed');
-    } finally {
-      setIsResearching(false);
-    }
-  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -67,8 +36,6 @@ function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
       setIsSaving(false);
     }
   };
-
-  const currentResearch = researchResults || existingResearch;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -161,54 +128,6 @@ function BlockEditor({ block, onClose, onSave }: BlockEditorProps) {
                 placeholder="Add your own notes about this block..."
               />
             </div>
-          </div>
-
-          {/* Research Section */}
-          <div className="border-t border-gray-200 dark:border-neutral-700 pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Research</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleResearch('quick')}
-                  disabled={isResearching}
-                  className="px-4 py-2 bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 text-gray-700 dark:text-neutral-300 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                  title="Always uses Lite tier - fastest, cheapest"
-                >
-                  Quick Research ($0.005)
-                </button>
-                <button
-                  onClick={() => handleResearch('deep')}
-                  disabled={isResearching}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                  title={`Uses your selected tier: ${selectedTierInfo.name} ($${(selectedTierInfo.price / 1000).toFixed(2)} per query)`}
-                >
-                  {isResearching ? 'Researching...' : `Deep Research ($${(selectedTierInfo.price / 1000).toFixed(2)})`}
-                </button>
-              </div>
-            </div>
-
-            {currentResearch && (
-              <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 space-y-3">
-                <div className="text-sm text-gray-600 dark:text-neutral-400">
-                  Found {currentResearch.results?.length || 0} resources
-                </div>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {currentResearch.results?.slice(0, 5).map((result: any, idx: number) => (
-                    <div key={idx} className="bg-white dark:bg-neutral-700 p-3 rounded border border-gray-200 dark:border-neutral-600">
-                      <div className="font-medium text-sm text-gray-900 dark:text-neutral-100">{result.title}</div>
-                      <a
-                        href={result.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        {result.url}
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Error Message */}

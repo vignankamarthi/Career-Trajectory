@@ -4,7 +4,7 @@ import path from 'path';
 // Resolves from working directory (backend/) up to project root: backend/ -> project-root/.env
 dotenv.config({ path: path.join(process.cwd(), '../.env') });
 
-import { traceable } from 'langsmith/traceable';
+import { traceable, getCurrentRunTree } from 'langsmith/traceable';
 
 /**
  * LangSmith Tracing Wrapper
@@ -24,10 +24,29 @@ export const tracedConfigurationAgent = traceable(
     userConfig: any,
     anthropicFn: () => Promise<any>
   ) {
-    return await anthropicFn();
+    const result = await anthropicFn();
+
+    // Format usage for LangSmith - use OpenAI-compatible format
+    if (result.usage) {
+      const inputTokens = result.usage.input_tokens || result.usage.inputTokens;
+      const outputTokens = result.usage.output_tokens || result.usage.outputTokens;
+
+      // Return data with OpenAI-compatible usage format that LangSmith expects
+      return {
+        ...result,
+        usage: {
+          prompt_tokens: inputTokens,
+          completion_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens
+        }
+      };
+    }
+
+    return result;
   },
   {
     name: 'ConfigurationAgent.generateTimeline',
+    run_type: 'llm',
     metadata: { agent: 'ConfigurationAgent' },
   }
 );
@@ -41,10 +60,29 @@ export const tracedConversationalAssistant = traceable(
     messageCount: number,
     anthropicFn: () => Promise<any>
   ) {
-    return await anthropicFn();
+    const result = await anthropicFn();
+
+    // Format usage for LangSmith - use OpenAI-compatible format
+    if (result.usage) {
+      const inputTokens = result.usage.input_tokens || result.usage.inputTokens;
+      const outputTokens = result.usage.output_tokens || result.usage.outputTokens;
+
+      // Return data with OpenAI-compatible usage format that LangSmith expects
+      return {
+        ...result,
+        usage: {
+          prompt_tokens: inputTokens,
+          completion_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens
+        }
+      };
+    }
+
+    return result;
   },
   {
     name: 'ConversationalAssistant.chat',
+    run_type: 'llm',
     metadata: { agent: 'ConversationalAssistant' },
   }
 );
@@ -91,10 +129,29 @@ export const tracedPreValidationAgent = traceable(
     context: any,
     anthropicFn: () => Promise<any>
   ) {
-    return await anthropicFn();
+    const result = await anthropicFn();
+
+    // Format usage for LangSmith - use OpenAI-compatible format
+    if (result.usage) {
+      const inputTokens = result.usage.input_tokens || result.usage.inputTokens;
+      const outputTokens = result.usage.output_tokens || result.usage.outputTokens;
+
+      // Return data with OpenAI-compatible usage format that LangSmith expects
+      return {
+        ...result,
+        usage: {
+          prompt_tokens: inputTokens,
+          completion_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens
+        }
+      };
+    }
+
+    return result;
   },
   {
     name: 'PreValidationAgent.analyzeInitialInput',
+    run_type: 'llm',
     metadata: { agent: 'PreValidationAgent' },
   }
 );
@@ -106,11 +163,30 @@ export const tracedConversationalClarificationAgent = traceable(
   async function gatherClarifications(
     context: any,
     anthropicFn: () => Promise<any>
-  ) {
-    return await anthropicFn();
+  ): Promise<any> {
+    const result = await anthropicFn();
+
+    // Format usage for LangSmith - use OpenAI-compatible format
+    if (result.usage) {
+      const inputTokens = result.usage.input_tokens || result.usage.inputTokens;
+      const outputTokens = result.usage.output_tokens || result.usage.outputTokens;
+
+      // Return data with OpenAI-compatible usage format that LangSmith expects
+      return {
+        ...result,
+        usage: {
+          prompt_tokens: inputTokens,
+          completion_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens
+        }
+      };
+    }
+
+    return result;
   },
   {
     name: 'ConversationalClarificationAgent.gatherClarifications',
+    run_type: 'llm',
     metadata: { agent: 'ConversationalClarificationAgent' },
   }
 );
@@ -139,10 +215,29 @@ export const tracedValidationAgent = traceable(
     input: any,
     anthropicFn: () => Promise<any>
   ) {
-    return await anthropicFn();
+    const result = await anthropicFn();
+
+    // Format usage for LangSmith - use OpenAI-compatible format
+    if (result.usage) {
+      const inputTokens = result.usage.input_tokens || result.usage.inputTokens;
+      const outputTokens = result.usage.output_tokens || result.usage.outputTokens;
+
+      // Return data with OpenAI-compatible usage format that LangSmith expects
+      return {
+        ...result,
+        usage: {
+          prompt_tokens: inputTokens,
+          completion_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens
+        }
+      };
+    }
+
+    return result;
   },
   {
     name: 'ValidationAgent.validateAndCorrect',
+    run_type: 'llm',
     metadata: { agent: 'ValidationAgent' },
   }
 );
