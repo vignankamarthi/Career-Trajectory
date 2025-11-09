@@ -111,20 +111,10 @@ CORRECTION RULES:
 - Use decimal ages (e.g., 14.5) for precise boundaries
 - Duration must exactly match: duration_years = end_age - start_age
 
-🚫 CRITICAL VALIDATION ANTI-PATTERNS - NEVER CREATE THESE ERRORS:
-
-❌ FALSE POSITIVE TYPE ERRORS: NEVER flag "start_age 10 != timeline start 10" when both are exactly 10
-❌ INFINITE CORRECTION LOOPS: NEVER trigger >2 correction attempts - causes rate limiting
-❌ OVER-VALIDATION: NEVER validate trivial differences like 10.0 vs 10 - treat as equal
-❌ CORRECTION CASCADES: NEVER create new errors during correction - validate fixes before returning
-❌ PERFECTIONIST VALIDATION: Accept timelines with minor decimal differences (<0.1 years)
-
-✅ VALIDATION SUCCESS PATTERNS:
-- Use parseFloat() for ALL numeric comparisons to avoid type mismatches
-- Maximum 1 correction attempt per timeline
-- Accept "close enough" values within 0.05 tolerance
+VALIDATION GUIDELINES:
 - Focus on CRITICAL violations only (duration bounds, gaps, overlaps)
-- Return success for working timelines even with minor imperfections
+- Maximum 1 correction attempt per timeline to avoid rate limiting
+- Return success for working timelines with minor imperfections
 
 Your goal: Fix all errors while keeping the timeline as close to the original as possible.`;
 
@@ -201,6 +191,31 @@ Fix: Age ${config.start_age}-${config.end_age}, ${config.num_layers} layers, Lay
 
     const { corrected_timeline, corrections_made } = response.data;
 
+    // DEBUG: Log the correction response to understand why corrected_timeline is undefined
+    Logger.debug('ValidationAgent correction response received', {
+      responseDataKeys: Object.keys(response.data),
+      correctedTimelineType: typeof corrected_timeline,
+      correctedTimelineContent: corrected_timeline,
+      correctionsMadeLength: corrections_made?.length,
+      rawResponse: JSON.stringify(response.data, null, 2)
+    });
+
+    // Check if corrected_timeline is valid before proceeding
+    if (!corrected_timeline || !corrected_timeline.layers) {
+      Logger.error('Validation correction returned invalid timeline', new Error('Invalid correction'), {
+        corrected_timeline,
+        corrections_made,
+        originalErrors: errors.length
+      });
+
+      return {
+        isValid: false,
+        errors: ['Validation correction failed: returned invalid timeline'],
+        corrections: corrections_made || [],
+        cost: response.cost,
+      };
+    }
+
     // Validate the corrected timeline
     const newErrors = collectValidationErrors(corrected_timeline, config);
 
@@ -250,6 +265,12 @@ Fix: Age ${config.start_age}-${config.end_age}, ${config.num_layers} layers, Lay
 function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig): string[] {
   const errors: string[] = [];
 
+  // Check if timeline exists and has layers
+  if (!timeline || !timeline.layers) {
+    errors.push('Timeline is missing or has no layers');
+    return errors;
+  }
+
   // Check number of layers
   if (timeline.layers.length !== config.num_layers) {
     errors.push(`Expected ${config.num_layers} layers, got ${timeline.layers.length}`);
@@ -259,17 +280,25 @@ function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig
   for (const layer of timeline.layers) {
     const layerPrefix = `Layer ${layer.layer_number}`;
 
-    // Check layer bounds (use parseFloat with tolerance to avoid false positives)
+    // Check layer bounds (Layer 1 must span full timeline, Layers 2&3 can be focused subsets)
     const layerStart = parseFloat(String(layer.start_age));
     const configStart = parseFloat(String(config.start_age));
     const layerEnd = parseFloat(String(layer.end_age));
     const configEnd = parseFloat(String(config.end_age));
 
-    if (Math.abs(layerStart - configStart) > 0.01) {
-      errors.push(`${layerPrefix}: start_age ${layerStart} != timeline start ${configStart} (diff: ${Math.abs(layerStart - configStart)})`);
-    }
-    if (Math.abs(layerEnd - configEnd) > 0.01) {
-      errors.push(`${layerPrefix}: end_age ${layerEnd} != timeline end ${configEnd} (diff: ${Math.abs(layerEnd - configEnd)})`);
+    if (layer.layer_number === 1) {
+      // Layer 1 must span the full timeline
+      if (Math.abs(layerStart - configStart) > 0.01) {
+        errors.push(`${layerPrefix}: start_age ${layerStart} != timeline start ${configStart} (diff: ${Math.abs(layerStart - configStart)})`);
+      }
+      if (Math.abs(layerEnd - configEnd) > 0.01) {
+        errors.push(`${layerPrefix}: end_age ${layerEnd} != timeline end ${configEnd} (diff: ${Math.abs(layerEnd - configEnd)})`);
+      }
+    } else {
+      // Layers 2&3 can be focused subsets - just verify they're within the timeline bounds
+      if (layerStart < configStart || layerEnd > configEnd) {
+        errors.push(`${layerPrefix}: spans ${layerStart}-${layerEnd}, must be within timeline bounds ${configStart}-${configEnd}`);
+      }
     }
 
     // Validate blocks
@@ -278,7 +307,10 @@ function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig
       continue;
     }
 
-    let prevEnd = parseFloat(String(config.start_age));
+    // For Layer 1: blocks must start from timeline start
+    // For Layers 2&3: blocks must start from layer start (focused subsets)
+    let prevEnd = layer.layer_number === 1 ? parseFloat(String(config.start_age)) : layerStart;
+
     for (let i = 0; i < layer.blocks.length; i++) {
       const block = layer.blocks[i];
       const blockPrefix = `${layerPrefix} Block ${i + 1}`;
@@ -299,10 +331,12 @@ function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig
         errors.push(`${blockPrefix}: duration mismatch (${blockDuration} != ${expectedDuration}, diff: ${Math.abs(blockDuration - expectedDuration)})`);
       }
 
-      // Check layer-specific duration bounds
+      // Check layer-specific duration bounds (relaxed for long timelines)
       if (layer.layer_number === 1) {
-        if (blockDuration < 4.0 || blockDuration > 10.0) {
-          errors.push(`${blockPrefix}: duration ${blockDuration} violates Layer 1 bounds (4-10 years)`);
+        const timelineSpan = config.end_age - config.start_age;
+        const maxLayer1Duration = Math.max(10.0, timelineSpan / 3); // Allow longer blocks for long timelines
+        if (blockDuration < 4.0 || blockDuration > maxLayer1Duration) {
+          errors.push(`${blockPrefix}: duration ${blockDuration} violates Layer 1 bounds (4-${maxLayer1Duration} years for ${timelineSpan}-year timeline)`);
         }
       } else if (layer.layer_number === 2) {
         if (blockDuration < 0.0 || blockDuration > 5.0) {
@@ -317,14 +351,17 @@ function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig
       prevEnd = blockEnd;
     }
 
-    // Check that last block ends at timeline end
+    // Check that last block ends at appropriate boundary
     if (layer.blocks.length > 0) {
       const lastBlock = layer.blocks[layer.blocks.length - 1];
       const lastBlockEnd = parseFloat(String(lastBlock.end_age));
-      const configEnd = parseFloat(String(config.end_age));
 
-      if (Math.abs(lastBlockEnd - configEnd) > 0.01) {
-        errors.push(`${layerPrefix}: last block ends at ${lastBlockEnd}, expected ${configEnd} (diff: ${Math.abs(lastBlockEnd - configEnd)})`);
+      // Layer 1 must end at timeline end, Layers 2&3 must end at layer end
+      const expectedEnd = layer.layer_number === 1 ? parseFloat(String(config.end_age)) : layerEnd;
+
+      if (Math.abs(lastBlockEnd - expectedEnd) > 0.01) {
+        const boundaryType = layer.layer_number === 1 ? 'timeline end' : 'layer end';
+        errors.push(`${layerPrefix}: last block ends at ${lastBlockEnd}, expected ${boundaryType} ${expectedEnd} (diff: ${Math.abs(lastBlockEnd - expectedEnd)})`);
       }
     }
   }
