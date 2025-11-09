@@ -218,34 +218,73 @@ Monitor all AI operations in real-time:
 ## Project Structure
 
 ```
-career-trajectory-ai/
+Career-Trajectory/
 ├── backend/
 │   ├── src/
-│   │   ├── agents/              # AI agent implementations
-│   │   │   ├── pre-validation.ts   # Input analysis agent
-│   │   │   ├── conversational.ts   # Question generation agent
-│   │   │   ├── configuration.ts    # Timeline generation agent
-│   │   │   └── research-sub-agents.ts # Research specialists
-│   │   ├── api/                 # REST API routes
-│   │   ├── database/            # SQLite schemas & queries
-│   │   └── utils/               # Validation & helpers
-│   ├── test-e2e-comprehensive.ts   # E2E testing suite
-│   └── server.ts               # Express application
+│   │   ├── agents/                   # AI agent implementations (7 agents)
+│   │   │   ├── configuration-agent.ts      # Timeline generation
+│   │   │   ├── conversational-assistant.ts # Q&A agent
+│   │   │   ├── internal-review-agent.ts    # State analysis
+│   │   │   ├── pre-validation-agent.ts     # Input validation
+│   │   │   ├── validation-agent.ts         # Timeline validation
+│   │   │   └── research-agents/            # 5 specialized research agents
+│   │   ├── routes/                   # REST API endpoints (7 routes)
+│   │   │   ├── configure-with-context.ts   # Main timeline generation
+│   │   │   ├── chat.ts                     # Conversational refinement
+│   │   │   ├── save.ts                     # Timeline save/load
+│   │   │   └── ...
+│   │   ├── services/                 # External integrations
+│   │   │   ├── parallel-mcp.ts             # Async research service
+│   │   │   ├── anthropic.ts                # Claude API wrapper
+│   │   │   └── ...
+│   │   ├── websocket/                # Real-time updates
+│   │   │   └── research-websocket.ts       # WebSocket server
+│   │   ├── database/                 # SQLite persistence
+│   │   │   ├── schema.sql                  # Database schema
+│   │   │   └── db.ts                       # Database connection
+│   │   ├── utils/                    # Shared utilities
+│   │   │   ├── logger.ts                   # LangSmith logging
+│   │   │   ├── validation.ts               # Zod schemas
+│   │   │   └── langsmith-tracer.ts         # Tracing wrapper
+│   │   ├── types/                    # TypeScript definitions
+│   │   │   └── agent-context.ts            # Core data structures
+│   │   ├── mcp/                      # Model Context Protocol
+│   │   │   └── langsmith-server.ts         # LangSmith MCP
+│   │   └── server.ts                 # Express entry point
+│   ├── dist/                         # Compiled production build
+│   └── data/                         # SQLite database file
 ├── frontend/
 │   ├── src/
-│   │   ├── components/          # React components
-│   │   │   ├── BlockEditor.tsx     # Timeline block editor
-│   │   │   ├── LayerView.tsx       # Timeline layer display
-│   │   │   └── Navigation.tsx      # App navigation
-│   │   ├── views/               # Page-level components
-│   │   │   ├── ConversationalConfigView.tsx # Initial setup
-│   │   │   └── TimelineView.tsx    # Timeline management
-│   │   ├── contexts/            # React contexts
-│   │   └── lib/                 # API client & utilities
-│   └── index.html             # Vite entry point
-├── AGENT_ARCHITECTURE.md       # Detailed technical docs
-├── CLAUDE.md                   # Claude Code configuration
-└── README.md                   # This file
+│   │   ├── views/                    # Main views
+│   │   │   └── TimelineView.tsx            # Timeline display & editing
+│   │   ├── components/               # Reusable UI components
+│   │   │   ├── LayerView.tsx               # Layer container
+│   │   │   ├── TimelineBlock.tsx           # Individual block
+│   │   │   ├── ChatInterface.tsx           # Q&A interface
+│   │   │   ├── ResearchNotification.tsx    # Research status
+│   │   │   └── ...
+│   │   ├── contexts/                 # React contexts
+│   │   │   ├── ThemeContext.tsx            # Dark/light mode
+│   │   │   └── ResearchTierContext.tsx     # Research tier selection
+│   │   ├── hooks/                    # Custom React hooks
+│   │   │   └── useWebSocket.ts             # WebSocket connection
+│   │   ├── lib/                      # Utilities
+│   │   │   └── api.ts                      # API client
+│   │   ├── App.tsx                   # Frontend entry point
+│   │   └── main.tsx                  # React mount point
+│   ├── dist/                         # Production bundle
+│   └── index.html                    # Vite entry point
+├── REVIEW_DOCUMENTATION/             # Technical documentation
+│   ├── 01_HIGH_LEVEL.md                    # System architecture
+│   ├── 02_MEDIUM_LEVEL.md                  # Component reference
+│   ├── 03_LOW_LEVEL.md                     # Implementation details
+│   └── 04_EXPLORATION_GUIDE.md             # Navigation guide
+├── CURRENT_AGENT_ARCHITECTURE.md     # Async architecture docs
+├── CITATIONS_AND_CREDITS.md          # Research attribution
+├── CLAUDE.md                         # AI assistant configuration
+├── QUICKSTART.md                     # User guide
+├── CURRENT_STATE.md                  # Production status (untracked)
+└── README.md                         # This file
 ```
 
 ---
@@ -415,8 +454,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: [GitHub Issues](https://github.com/yourusername/career-trajectory-ai/issues)
 - **Docs**: [Full Documentation](https://docs.career-trajectory-ai.com)
 
-## Academic Citations
+## Documentation
 
+### Technical Documentation
+For developers and contributors, comprehensive technical documentation is available:
+
+- **[High-Level Architecture](./REVIEW_DOCUMENTATION/01_HIGH_LEVEL.md)** - System architecture, design philosophy, data flows
+- **[Component Reference](./REVIEW_DOCUMENTATION/02_MEDIUM_LEVEL.md)** - All agents, routes, services, and components
+- **[Implementation Guide](./REVIEW_DOCUMENTATION/03_LOW_LEVEL.md)** - Code patterns, examples, security
+- **[Exploration Guide](./REVIEW_DOCUMENTATION/04_EXPLORATION_GUIDE.md)** - How to navigate and understand the codebase
+
+### Academic Citations
 This project builds upon foundational research in multi-agent systems and AI coordination. For complete academic attribution and proper citations:
 
  **[CITATIONS_AND_CREDITS.md](./CITATIONS_AND_CREDITS.md)** - Academic integrity and source attribution

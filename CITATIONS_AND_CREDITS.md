@@ -168,7 +168,7 @@ Documentation: AGENT_ARCHITECTURE.md (53KB technical specification)
 ## Updates and Corrections
 
 **Version**: 2.0 (Cleaned up for current implementation)
-**Last Updated**: October 31, 2025
+**Last Updated**: November 9, 2025
 
 **Changes in v2.0**:
 - Removed citations for unimplemented features (Chain of Agents, MAPLE, MIRIX, SWEET-RL, STeCa, CS-Agent, CoMet)
@@ -198,37 +198,58 @@ We are committed to:
 
 ## Currently Implemented Features
 
-For reference, here's what is ACTUALLY implemented in the current system (not just planned):
+For reference, here's what is ACTUALLY implemented in the current production system (v2.0):
 
-**Agent System**:
-- 4-agent pipeline (PreValidationAgent, ConversationalClarificationAgent, InternalReviewAgent, ConfigurationAgent)
+**Agent System** (7 agents total):
+- 4-agent pipeline (Pre-Validation, Conversational Assistant, Internal Review, Configuration)
+- Validation Agent (timeline validation with confidence scores)
+- 5 specialized research agents (University, Career Path, Skills Gap, Timeline Optimization, Quick Research)
 - 95% confidence thresholds before proceeding
 - Agent context with attention mechanism
 - Conservative assumption policy
 
-**Research Integration**:
-- 5 Parallel AI research sub-agents
-- Research processor tiers (LITE, BASE, PRO, ULTRA, ULTRA2X, ULTRA4X, ULTRA8X)
-- Cost tracking and budget alerts
-- Research approval gates
+**Research Integration** (Async Architecture):
+- Parallel AI research service with fire-and-forget pattern
+- 9 research processor tiers (lite, base, core, core2x, pro, ultra, ultra2x, ultra4x, ultra8x)
+- WebSocket-powered real-time updates (ws://localhost:3001/ws)
+- Visual research indicators (pulsing blue dots, green glow animations)
+- Toast notifications for research events
+- Selective research spawning (Layer 1: all blocks, Layer 2: keywords only, Layer 3: none)
+- Cost tracking and research approval gates
 
 **Frontend**:
 - React 18 + TypeScript + Vite
-- Tailwind CSS with dark mode
-- JetBrains Mono font (monospace)
-- Pyramid timeline visualization (3 layers with scaling)
+- Tailwind CSS with dark mode support
+- Timeline editing with inline editing and drag-and-drop
+- Chat interface for conversational refinement
+- Research status notifications (ResearchNotification component)
+- Auto-reconnecting WebSocket client
+- localStorage state persistence
+- Pricing modal for research tier selection
 
 **Backend**:
 - Express.js + TypeScript
-- SQLite database
-- LangSmith tracing
-- API endpoints for configuration, chat, validation
+- SQLite database (better-sqlite3) with strict constraints
+- LangSmith tracing for all AI operations
+- WebSocket server for real-time research updates
+- 7 API routes (configure-with-context, chat, save, research-status, etc.)
+- Zod validation schemas
+- Comprehensive error handling
 
-**Testing**:
-- 5 comprehensive E2E scenarios
-- Validation error handling
-- Confidence threshold validation
+**Database Schema**:
+- timelines table (end_goal, start_age, end_age)
+- layers table (3-layer hierarchy)
+- blocks table (individual timeline blocks)
+- research_tasks table (async research tracking)
+- uploaded_files table (PDF/document support)
+
+**Production Ready**:
+- TypeScript strict mode compliance (0 errors)
+- Production builds for frontend and backend
+- Optimized bundle sizes (442KB JS, 50KB CSS)
+- All servers running in production mode
+- Comprehensive documentation (4 technical docs + user guides)
 
 ---
 
-*This document reflects the current state of the system and will be updated during the NEXT_GEN refactor to add citations for new features as they are implemented.*
+*This document reflects the production-ready v2.0 system (2025-11-09). For complete technical details, see REVIEW_DOCUMENTATION/.*

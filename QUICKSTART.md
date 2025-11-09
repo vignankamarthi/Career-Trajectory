@@ -175,8 +175,14 @@ A: No, you need an internet connection for AI features and research. However, yo
 ## Getting Help
 
 **GitHub Issues**: https://github.com/anthropics/claude-code/issues
-**Project Documentation**: See `CLAUDE.md` for technical details
-**Architecture Reference**: See `CURRENT_AGENT_ARCHITECTURE.md` for system design
+**User Guide**: This file (QUICKSTART.md)
+**Technical Documentation**: See `REVIEW_DOCUMENTATION/` for developer guides
+  - [High-Level Architecture](./REVIEW_DOCUMENTATION/01_HIGH_LEVEL.md)
+  - [Component Reference](./REVIEW_DOCUMENTATION/02_MEDIUM_LEVEL.md)
+  - [Implementation Guide](./REVIEW_DOCUMENTATION/03_LOW_LEVEL.md)
+  - [Navigation Guide](./REVIEW_DOCUMENTATION/04_EXPLORATION_GUIDE.md)
+**Architecture Reference**: See `CURRENT_AGENT_ARCHITECTURE.md` for async system design
+**AI Configuration**: See `CLAUDE.md` for AI assistant setup
 
 ## Next Steps
 
