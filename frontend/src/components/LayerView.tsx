@@ -39,16 +39,18 @@ function LayerView({ layerNumber, blocks, onBlockClick, researchingBlocks, compl
       </div>
 
       {blocks.length > 0 ? (
-        <div className="flex gap-6 overflow-x-auto pb-4 justify-center">
-          {blocks.map((block) => (
-            <TimelineBlock
-              key={block.id}
-              block={block}
-              onClick={() => onBlockClick(block)}
-              isResearching={researchingBlocks.has(block.id)}
-              isResearchComplete={completedBlocks.has(block.id)}
-            />
-          ))}
+        <div className="w-full overflow-x-auto pb-4">
+          <div className="flex gap-6 min-w-min justify-center">
+            {blocks.map((block) => (
+              <TimelineBlock
+                key={block.id}
+                block={block}
+                onClick={() => onBlockClick(block)}
+                isResearching={researchingBlocks.has(block.id)}
+                isResearchComplete={completedBlocks.has(block.id)}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="p-8 bg-neutral-50 dark:bg-neutral-800 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 text-center">

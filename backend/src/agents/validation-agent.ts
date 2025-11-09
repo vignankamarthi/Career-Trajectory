@@ -94,8 +94,10 @@ export async function validateAndCorrectTimeline(
   try {
     const systemPrompt = `You are a timeline validation and correction expert. Your job is to fix validation errors in career timelines while preserving the original intent.
 
+CRITICAL: You MUST call the correct_timeline tool and populate BOTH "corrected_timeline" and "corrections_made" fields. DO NOT return empty input {}.
+
 CRITICAL HARD BOUNDS - MUST BE ENFORCED:
-1. Layer 1 blocks: MUST be between 4.0 and 10.0 years
+1. Layer 1 blocks: MUST be between 4.0 and 20.0 years
 2. Layer 2 blocks: MUST be between 0.0 and 5.0 years
 3. Layer 3 blocks: MUST be between 0.0 and 1.0 years
 4. Timeline: Start at age ${config.start_age}, end at age ${config.end_age}
@@ -111,20 +113,48 @@ CORRECTION RULES:
 - Use decimal ages (e.g., 14.5) for precise boundaries
 - Duration must exactly match: duration_years = end_age - start_age
 
-VALIDATION GUIDELINES:
-- Focus on CRITICAL violations only (duration bounds, gaps, overlaps)
-- Maximum 1 correction attempt per timeline to avoid rate limiting
-- Return success for working timelines with minor imperfections
+EXAMPLE TOOL CALL STRUCTURE (DO NOT COPY, FIX THE ACTUAL TIMELINE):
+{
+  "corrected_timeline": {
+    "layers": [
+      {
+        "layer_number": 1,
+        "title": "Original Title",
+        "start_age": ${config.start_age},
+        "end_age": ${config.end_age},
+        "blocks": [
+          {
+            "title": "Fixed Block",
+            "description": "Original description",
+            "start_age": ${config.start_age},
+            "end_age": ${config.start_age + 8},
+            "duration_years": 8
+          }
+        ]
+      }
+    ]
+  },
+  "corrections_made": ["Fixed Layer 1 Block 1 duration from 25 to 8 years"]
+}
+
+IMPORTANT: This is just an example structure. You MUST fix the ACTUAL timeline provided and return ALL ${config.num_layers} layers with corrected blocks.
 
 Your goal: Fix all errors while keeping the timeline as close to the original as possible.`;
 
-    const userPrompt = `Fix timeline errors (keep descriptions comprehensive but concise):
+    const userPrompt = `Fix the following timeline errors:
 
-ERRORS: ${errors.slice(0, 10).join('; ')}
+ERRORS TO FIX: ${errors.slice(0, 10).join('; ')}
 
-TIMELINE: ${JSON.stringify(timeline, null, 0)}
+ORIGINAL TIMELINE: ${JSON.stringify(timeline, null, 0)}
 
-Fix: Age ${config.start_age}-${config.end_age}, ${config.num_layers} layers, Layer bounds: 1(4-10y), 2(0-5y), 3(0-1y)`;
+REQUIREMENTS:
+- Age range: ${config.start_age} to ${config.end_age}
+- Number of layers: ${config.num_layers}
+- Layer 1 bounds: 4-20 years per block
+- Layer 2 bounds: 0-5 years per block
+- Layer 3 bounds: 0-1 years per block
+
+Call the correct_timeline tool with "corrected_timeline" containing the fixed timeline structure and "corrections_made" listing what you fixed.`;
 
     const schema = {
       name: 'correct_timeline',
@@ -184,7 +214,7 @@ Fix: Age ${config.start_age}-${config.end_age}, ${config.num_layers} layers, Lay
           corrections_made: string[];
         }>([{ role: 'user', content: userPrompt }], schema, {
           system: systemPrompt,
-          maxTokens: 1024,
+          maxTokens: 8192,
         });
       }
     );
@@ -271,9 +301,10 @@ function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig
     return errors;
   }
 
-  // Check number of layers
-  if (timeline.layers.length !== config.num_layers) {
-    errors.push(`Expected ${config.num_layers} layers, got ${timeline.layers.length}`);
+  // Check number of layers (ensure numeric comparison)
+  const expectedLayers = Number(config.num_layers);
+  if (timeline.layers.length !== expectedLayers) {
+    errors.push(`Expected ${expectedLayers} layers, got ${timeline.layers.length}`);
   }
 
   // Validate each layer
@@ -333,7 +364,7 @@ function collectValidationErrors(timeline: GeneratedTimeline, config: UserConfig
 
       // Check layer-specific duration bounds (relaxed for long timelines)
       if (layer.layer_number === 1) {
-        const timelineSpan = config.end_age - config.start_age;
+        const timelineSpan = Number(config.end_age) - Number(config.start_age);
         const maxLayer1Duration = Math.max(10.0, timelineSpan / 3); // Allow longer blocks for long timelines
         if (blockDuration < 4.0 || blockDuration > maxLayer1Duration) {
           errors.push(`${blockPrefix}: duration ${blockDuration} violates Layer 1 bounds (4-${maxLayer1Duration} years for ${timelineSpan}-year timeline)`);

@@ -235,7 +235,7 @@ function TimelineView({ timelineId, onResetTimeline, researchingBlocks, complete
       <div className="flex-1 flex overflow-hidden">
         {/* Full Timeline Display (All Layers Vertically) */}
         <div className={`flex-1 p-6 overflow-auto ${showChat ? 'pr-0' : ''} bg-neutral-50 dark:bg-neutral-950`}>
-          <div className="max-w-6xl mx-auto space-y-8">
+          <div className="w-full space-y-8">
             {/* Render all layers vertically with pyramid scaling effect */}
             {layers.map((layer: any) => {
               // Calculate scale: Layer 1 = 100%, Layer 2 = 90%, Layer 3 = 80%
