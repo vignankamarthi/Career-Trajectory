@@ -480,13 +480,14 @@ router.post('/generate', async (req: Request, res: Response) => {
       uploaded_files: row.uploaded_files ? JSON.parse(row.uploaded_files) : undefined,
     };
 
+    // DEBUG: Temporarily bypass stage check to debug LLM response issue
     // Verify workflow stage
-    if (context.workflow.current_stage !== 'ready_for_generation') {
-      return res.status(400).json({
-        error: 'Context not ready for generation. Complete clarification first.',
-        current_stage: context.workflow.current_stage,
-      });
-    }
+    // if (context.workflow.current_stage !== 'ready_for_generation') {
+    //   return res.status(400).json({
+    //     error: 'Context not ready for generation. Complete clarification first.',
+    //     current_stage: context.workflow.current_stage,
+    //   });
+    // }
 
     // Check timeline limit (max 15 active timelines)
     const { query } = require('../database/db');

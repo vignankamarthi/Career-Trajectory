@@ -36,6 +36,7 @@ Thumbs.db
 # Development docs (not for production)
 CLAUDE.md
 REFACTOR.md
+CURRENT_STATE.md
 
 # Uploads
 uploads/*

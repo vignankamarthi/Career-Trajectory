@@ -297,4 +297,48 @@ export async function sendMessageJSON<T>(
   }
 }
 
-export { MODELS };
+/**
+ * Extract JSON from text response (hybrid approach)
+ * Handles various formats: JSON code blocks, plain JSON, or mixed text
+ */
+function extractTimelineJSON(text: string): any {
+  // Strategy 1: JSON code blocks (most reliable - preferred by LLM)
+  const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+  if (codeBlockMatch) {
+    try {
+      const timeline = JSON.parse(codeBlockMatch[1]);
+      if (timeline.layers && Array.isArray(timeline.layers)) {
+        return timeline;
+      }
+    } catch (error) {
+      // Fall through to other strategies
+    }
+  }
+
+  // Strategy 2: Bare JSON (if no code blocks)
+  const bareJsonMatch = text.match(/^\s*(\{[\s\S]*\})\s*$/);
+  if (bareJsonMatch) {
+    try {
+      const timeline = JSON.parse(bareJsonMatch[1]);
+      if (timeline.layers && Array.isArray(timeline.layers)) {
+        return timeline;
+      }
+    } catch (error) {
+      // Fall through to fallback strategy
+    }
+  }
+
+  // Strategy 3: Fallback - any JSON object (original logic)
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('No JSON found in response');
+  }
+
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    throw new Error(`Failed to parse JSON: ${(error as Error).message}`);
+  }
+}
+
+export { MODELS, extractTimelineJSON };

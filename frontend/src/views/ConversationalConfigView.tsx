@@ -492,9 +492,10 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
       return false;
     }
 
-    // Only show if we're on the initial form AND have existing conversation data
-    if (!showInitialForm || !contextId || messages.length === 0) {
-      console.log('[SAVED_CONV] FALSE - form conditions', { showInitialForm, hasContextId: !!contextId, messagesCount: messages.length });
+    // Only show if we have existing conversation data (context + messages)
+    // Don't check showInitialForm here - that becomes FALSE after submission
+    if (!contextId || messages.length === 0) {
+      console.log('[SAVED_CONV] FALSE - missing context or messages', { hasContextId: !!contextId, messagesCount: messages.length });
       return false;
     }
 
