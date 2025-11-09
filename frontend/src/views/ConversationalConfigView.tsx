@@ -717,8 +717,6 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     className={`w-full px-4 py-2.5 bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 ${hasSavedConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                     placeholder="Enter your name"
                     required
-                    data-gramm="true"
-                    data-gramm-editor="true"
                   />
                 </div>
 
@@ -778,8 +776,6 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     placeholder="e.g., Get into MIT for Computer Science"
                     rows={3}
                     required
-                    data-gramm="true"
-                    data-gramm-editor="true"
                   />
                 </div>
 
@@ -1003,8 +999,6 @@ function ConversationalConfigView({ onTimelineCreated, onNavigateHome, onFilesCh
                     placeholder="Type your message..."
                     className="flex-1 h-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg focus:ring-2 focus:ring-neutral-500 resize-none overflow-auto"
                     disabled={isConversing || isGenerating}
-                    data-gramm="true"
-                    data-gramm-editor="true"
                   />
                 </div>
 

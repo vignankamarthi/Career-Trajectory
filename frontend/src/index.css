@@ -29,37 +29,3 @@ textarea::-webkit-resizer {
 textarea::-webkit-resizer:hover {
   background: #a3a3a3;
 }
-
-/* Ensure Grammarly icons are visible */
-input[data-gramm="true"],
-textarea[data-gramm="true"] {
-  position: relative !important;
-}
-
-/* Grammarly icon positioning and visibility */
-grammarly-ghost {
-  z-index: 1000 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-[data-grammarly-shadow-root] {
-  z-index: 1000 !important;
-  visibility: visible !important;
-}
-
-/* Grammarly extension specific styles */
-grammarly-extension {
-  z-index: 1000 !important;
-}
-
-/* Make sure Grammarly popover is visible */
-._1BN1N {
-  z-index: 1001 !important;
-}
-
-/* Grammarly icon container */
-[data-grammarly-part] {
-  z-index: 1000 !important;
-  visibility: visible !important;
-}

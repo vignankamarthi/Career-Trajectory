@@ -54,7 +54,12 @@ router.patch('/:id', async (req: Request, res: Response) => {
     }
 
     // Merge updates with existing data
-    const merged = { ...existing, ...updates };
+    // Ensure research_data is string or empty string (not null) for validation
+    const merged = {
+      ...existing,
+      research_data: existing.research_data || '',
+      ...updates,
+    };
 
     // Validate the merged block
     try {
@@ -93,7 +98,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
     }
 
     // Add updated_at
-    updateFields.push('updated_at = datetime("now")');
+    updateFields.push("updated_at = datetime('now')");
     updateValues.push(id);
 
     const sql = `UPDATE blocks SET ${updateFields.join(', ')} WHERE id = ?`;
