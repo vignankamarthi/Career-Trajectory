@@ -3,7 +3,7 @@
  * Toast notifications for async research updates
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ResearchUpdate } from '../hooks/useWebSocket';
 
 interface Props {

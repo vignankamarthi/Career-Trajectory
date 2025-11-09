@@ -46,8 +46,8 @@ function LayerView({ layerNumber, blocks, onBlockClick, researchingBlocks, compl
                 key={block.id}
                 block={block}
                 onClick={() => onBlockClick(block)}
-                isResearching={researchingBlocks.has(block.id)}
-                isResearchComplete={completedBlocks.has(block.id)}
+                isResearching={researchingBlocks.has(block.id || '')}
+                isResearchComplete={completedBlocks.has(block.id || '')}
               />
             ))}
           </div>

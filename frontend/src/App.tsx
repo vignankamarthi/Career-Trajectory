@@ -40,7 +40,7 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // WebSocket connection for async research updates
-  const { isConnected, lastMessage, researchingBlocks, completedBlocks } = useWebSocket();
+  const { lastMessage, researchingBlocks, completedBlocks } = useWebSocket();
 
   // Load state from localStorage on mount
   useEffect(() => {

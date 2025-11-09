@@ -74,7 +74,7 @@ export default function PricingModal({ isOpen, onClose }: PricingModalProps) {
                 </tr>
               </thead>
               <tbody>
-                {RESEARCH_TIERS.map((tier, idx) => {
+                {RESEARCH_TIERS.map((tier) => {
                   const isSelected = selectedTier === tier.id;
 
                   // Latency estimates

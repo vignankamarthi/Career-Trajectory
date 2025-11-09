@@ -4,7 +4,7 @@
  * Persists to localStorage
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 export type ResearchTier = 'lite' | 'base' | 'core' | 'core2x' | 'pro' | 'ultra' | 'ultra2x' | 'ultra4x' | 'ultra8x';
 

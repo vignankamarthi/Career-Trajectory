@@ -51,7 +51,7 @@ function TimelineBlock({ block, onClick, isResearching = false, isResearchComple
     >
       {/* Pulsing blue dot for researching */}
       {isResearching && (
-        <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 rounded-full animate-pulse-dot shadow-lg" />
+        <div className="absolute -top-2 -right-2 w-5 h-5 bg-blue-500 rounded-full animate-pulse-dot shadow-lg ring-2 ring-blue-300 dark:ring-blue-700" />
       )}
 
       <div className="font-semibold text-sm text-center">{block.title}</div>

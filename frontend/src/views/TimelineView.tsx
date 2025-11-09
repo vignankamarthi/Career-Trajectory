@@ -55,8 +55,8 @@ function TimelineView({ timelineId, onResetTimeline, researchingBlocks, complete
     onSuccess: (response) => {
       setChatMessages((prev) => [
         ...prev,
-        { role: 'user', content: chatMessage },
-        { role: 'assistant', content: response.message },
+        { role: 'user', content: chatMessage, timeline_id: timelineId },
+        { role: 'assistant', content: (response as any).message || '', timeline_id: timelineId },
       ]);
       setChatMessage('');
       queryClient.invalidateQueries({ queryKey: ['chat', timelineId] });
@@ -141,7 +141,8 @@ function TimelineView({ timelineId, onResetTimeline, researchingBlocks, complete
     );
   }
 
-  const { timeline, layers } = timelineData;
+  const timeline = (timelineData as any).timeline || timelineData;
+  const layers = (timelineData as any).layers || [];
 
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-neutral-950">
@@ -328,7 +329,7 @@ function TimelineView({ timelineId, onResetTimeline, researchingBlocks, complete
         <BlockEditor
           block={selectedBlock}
           onClose={() => setSelectedBlock(null)}
-          onSave={(updatedBlock) => {
+          onSave={(_updatedBlock) => {
             setSelectedBlock(null);
             queryClient.invalidateQueries({ queryKey: ['timeline', timelineId] });
           }}
