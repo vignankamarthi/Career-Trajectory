@@ -239,13 +239,30 @@ export async function sendMessageJSON<T>(
     const outputTokens = response.usage.output_tokens;
     const cost = calculateCost(model, inputTokens, outputTokens);
 
+    // DEBUG: Log the raw response to understand what LLM is returning
+    Logger.info('sendMessageJSON raw LLM response', {
+      contentBlocks: response.content.map(block => ({ type: block.type, hasToolUse: block.type === 'tool_use' })),
+      fullContent: JSON.stringify(response.content, null, 2)
+    });
+
     // Extract tool use result
     const toolUse = response.content.find((block) => block.type === 'tool_use');
     if (!toolUse || toolUse.type !== 'tool_use') {
+      Logger.error('No tool use found in LLM response', new Error('Missing tool_use'), {
+        contentTypes: response.content.map(block => block.type),
+        responseContent: response.content
+      });
       throw new Error('No tool use found in response');
     }
 
     const data = toolUse.input as T;
+
+    // DEBUG: Log what we extracted from tool_use
+    Logger.info('sendMessageJSON extracted tool data', {
+      toolUseName: toolUse.name,
+      inputKeys: Object.keys(toolUse.input),
+      inputContent: JSON.stringify(toolUse.input, null, 2)
+    });
 
     // Log API call
     Logger.apiCall('anthropic', {

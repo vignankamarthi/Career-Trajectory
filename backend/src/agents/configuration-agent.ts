@@ -194,6 +194,14 @@ Remember: All blocks must fit within the timeline and respect duration bounds fo
     let timeline = response.data;
     let generationCost = response.cost;
 
+    // DEBUG: Log what the LLM actually returned
+    Logger.debug('LLM response received from ConfigurationAgent', {
+      timelineExists: !!timeline,
+      layersExists: !!(timeline && timeline.layers),
+      layersCount: timeline?.layers?.length || 0,
+      rawTimeline: JSON.stringify(timeline, null, 2)
+    });
+
     // Intelligent Validation & Correction: Use LLM to fix errors
     const validationResult = await validateAndCorrectTimeline(timeline, config);
 
@@ -254,12 +262,17 @@ function validateTimeline(timeline: GeneratedTimeline, config: UserConfig): void
   for (const layer of timeline.layers) {
     const layerPrefix = `Layer ${layer.layer_number}`;
 
-    // Check layer bounds
-    if (layer.start_age !== config.start_age) {
-      errors.push(`${layerPrefix}: start_age ${layer.start_age} != timeline start ${config.start_age}`);
+    // Check layer bounds (use parseFloat with tolerance to avoid false positives)
+    const layerStart = parseFloat(String(layer.start_age));
+    const configStart = parseFloat(String(config.start_age));
+    const layerEnd = parseFloat(String(layer.end_age));
+    const configEnd = parseFloat(String(config.end_age));
+
+    if (Math.abs(layerStart - configStart) > 0.01) {
+      errors.push(`${layerPrefix}: start_age ${layerStart} != timeline start ${configStart} (diff: ${Math.abs(layerStart - configStart)})`);
     }
-    if (layer.end_age !== config.end_age) {
-      errors.push(`${layerPrefix}: end_age ${layer.end_age} != timeline end ${config.end_age}`);
+    if (Math.abs(layerEnd - configEnd) > 0.01) {
+      errors.push(`${layerPrefix}: end_age ${layerEnd} != timeline end ${configEnd} (diff: ${Math.abs(layerEnd - configEnd)})`);
     }
 
     // Validate blocks
@@ -354,82 +367,10 @@ export async function generateWithContext(
 
   const config = context.user_config;
 
-  // Build enhanced system prompt with context from all agents
-  const systemPrompt = `You are a career trajectory planning expert. Generate a structured timeline that helps the user achieve their goal.
+  // STREAMLINED: Minimal system prompt to reduce token usage and prevent timeouts
+  const systemPrompt = `Generate ${config.num_layers} timeline layers for: "${config.end_goal}" (age ${config.start_age}-${config.end_age})
 
-CRITICAL HARD BOUNDS - MUST BE ENFORCED:
-1. Layer 1 blocks: MUST be between 4.0 and 10.0 years
-2. Layer 2 blocks: MUST be between 0.0 and 5.0 years
-3. Layer 3 blocks: MUST be between 0.0 and 1.0 years
-4. Timeline: Start at age ${config.start_age}, end at age ${config.end_age}
-5. Total duration: ${config.end_age - config.start_age} years
-6. Number of layers: ${config.num_layers}
-
-CRITICAL ASSUMPTION POLICY - EXTRA CONSERVATIVE:
-
-DEFAULT: If unclear, create general blocks and note what's uncertain.
-
-ONLY make an assumption if ALL of these are true:
-1. Information is READILY AVAILABLE (factual, not inferred)
-2. Information is UNIVERSAL (applies to everyone)
-3. Assumption is INCONSEQUENTIAL to final plan
-4. You are AT LEAST 90% confident it won't affect user goals
-
-ACCEPTABLE assumptions (rare):
-- Mathematical calculations (duration = end - start)
-- Hard constraints (blocks must be sequential)
-
-UNACCEPTABLE assumptions (NEVER make these):
-- "Typical" patterns (e.g., "SAT in junior year")
-- User preferences not explicitly stated
-- Context-based inferences (e.g., "MIT → research focus")
-
-When information is unclear:
-- Create more general blocks that can be refined later
-- Note assumptions_made for transparency
-
----
-
-CONTEXT FROM OTHER AGENTS:
-
-VALIDATION AGENT identified these critical constraints:
-${context.attention.validation_agent?.critical_constraints.map((c) => `- ${c}`).join('\n') || '- None specified'}
-
-VALIDATION AGENT identified these focus areas:
-${context.attention.validation_agent?.focus_areas.map((a) => `- ${a}`).join('\n') || '- None specified'}
-
-CONVERSATIONAL AGENT clarified user's intent:
-"${context.attention.conversational_agent?.clarified_intent || 'No specific clarification'}"
-
-CONVERSATIONAL AGENT extracted these key requirements:
-${context.attention.conversational_agent?.key_requirements.map((r) => `- ${r}`).join('\n') || '- None specified'}
-
-CONVERSATIONAL AGENT documented these preferences:
-${JSON.stringify(context.attention.conversational_agent?.user_preferences || {}, null, 2)}
-
-INTERNAL AGENT flagged these areas as challenging:
-${context.attention.internal_agent?.blocks_requiring_attention.map((b) => `- ${b}`).join('\n') || '- None specified'}
-
----
-
-LAYER GUIDANCE:
-- Layer 1: Broad strokes (major phases like "Build Foundation", "Execute Strategy")
-- Layer 2: Medium detail (specific milestones like "Complete AP courses", "Build portfolio")
-- Layer 3: Fine detail (month-by-month actions like "Study for SAT", "Draft essay")
-
-RULES:
-- Blocks MUST NOT overlap within a layer
-- Blocks MUST fill the entire timeline (no gaps)
-- Earlier blocks should prepare for later blocks
-- Final block should directly lead to the end goal
-- Duration calculations: duration_years = end_age - start_age (must be exact)
-- ALL ages and durations must be decimal numbers (e.g., 14.5, not 14)
-- Use ALL the context from other agents to create a personalized timeline
-- Address the focus areas and challenging blocks identified
-
-For user: ${config.user_name}
-Goal: ${config.end_goal}
-Timeline: Age ${config.start_age} to ${config.end_age}`;
+Layer bounds: L1(4-10y), L2(0-5y), L3(0-1y). No gaps, no overlaps. Duration = end - start.`;
 
   // Build uploaded files context if any files were uploaded
   let uploadedFilesContext = '';
@@ -445,28 +386,11 @@ Timeline: Age ${config.start_age} to ${config.end_age}`;
     });
   }
 
-  const userPrompt = `Generate a ${config.num_layers}-layer timeline for ${config.user_name} to achieve: "${config.end_goal}"
-
-Timeline: Age ${config.start_age} to ${config.end_age} (${config.end_age - config.start_age} years)${uploadedFilesContext}
-
-IMPORTANT: Use ALL the context provided from Validation, Conversational, and Internal agents to create a highly personalized timeline that addresses:
-1. The critical constraints and focus areas identified
-2. The user's clarified intent and key requirements
-3. The user's documented preferences
-4. The challenging areas that need special attention
-
-Create logical blocks for each layer that:
-1. Build toward the end goal progressively
-2. Respect all hard bounds (Layer 1: 4-10yr, Layer 2: 0-5yr, Layer 3: 0-1yr)
-3. Cover the entire timeline with no gaps or overlaps
-4. Are realistic, personalized, and actionable
-5. Reflect the specific information gathered in the conversation
-
-Remember: Use the conversational context to make this timeline SPECIFIC to ${config.user_name}'s situation and preferences.`;
+  const userPrompt = `Create timeline for ${config.user_name}: "${config.end_goal}" (${config.start_age}-${config.end_age})${uploadedFilesContext ? ' Files: ' + context.uploaded_files?.map(f => f.originalname).join(', ') : ''}`;
 
   // Define JSON schema for structured output (same as legacy)
   const schema = {
-    name: 'generate_timeline_with_context',
+    name: 'generate_timeline',
     description: 'Generates a personalized timeline using agent context and attention mechanism',
     schema: {
       type: 'object',
@@ -551,6 +475,9 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
   };
 
   try {
+    // DEBUG: Log before LLM call to check if we reach this point
+    Logger.info('About to make LLM call for timeline generation');
+
     const response = await tracedConfigurationAgent(
       config,
       async () => {
@@ -563,7 +490,7 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
         }>(
           [{ role: 'user', content: userPrompt }],
           schema,
-          { system: systemPrompt, maxTokens: 8192 }
+          { system: systemPrompt, maxTokens: 4096 }
         );
       }
     );
@@ -576,7 +503,46 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
       assumptions_made,
     } = response.data;
 
-    const timeline: GeneratedTimeline = { layers: layers || [] };
+    // DEBUG: Log the raw response to understand why layers is empty
+    Logger.info('ConfigurationAgent LLM response received', {
+      responseDataKeys: Object.keys(response.data),
+      layersType: typeof layers,
+      layersLength: layers?.length || 0,
+      layersContent: JSON.stringify(layers, null, 2),
+      fullResponseData: JSON.stringify(response.data, null, 2),
+      responseDataSize: JSON.stringify(response.data).length,
+      confidenceScore: confidence_score
+    });
+
+    // Handle empty response from LLM - this indicates a fundamental issue
+    if (!layers || layers.length === 0) {
+      Logger.error('ConfigurationAgent returned empty layers - LLM generation failed', new Error('Empty LLM response'), {
+        confidence_score,
+        generated_structure,
+        challenging_blocks,
+        assumptions_made,
+        contextHasValidation: !!context.attention.validation_agent,
+        contextHasConversational: !!context.attention.conversational_agent,
+        contextHasInternal: !!context.attention.internal_agent,
+      });
+
+      // Build attention object for failed generation
+      const attention: ConfigurationAttention = {
+        confidence_score: 0,
+        generated_structure: generated_structure || 'Generation failed - empty response',
+        challenging_blocks: challenging_blocks || ['LLM returned empty timeline'],
+        assumptions_made: assumptions_made || [],
+      };
+
+      return {
+        is_confident: false,
+        confidence_score: 0,
+        issues: ['Timeline generation failed: LLM returned empty response'],
+        attention,
+      };
+    }
+
+    const timeline: GeneratedTimeline = { layers };
     const is_confident = confidence_score >= confidenceThreshold;
 
     Logger.info('Context-aware timeline generated', {
