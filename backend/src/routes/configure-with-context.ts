@@ -23,6 +23,7 @@ import { generateWithContext } from '../agents/configuration-agent';
 import { AgentContext, ConversationMessage } from '../types/agent-context';
 import { UserError, ValidationErrors } from '../utils/user-errors';
 import { processUploadedFiles } from '../utils/pdf-extractor';
+import { timelineGenerationWorkflow } from '../services/tracing';
 
 const router = express.Router();
 
@@ -445,7 +446,7 @@ router.post('/generate', async (req: Request, res: Response) => {
 
     // CONCURRENCY CONTROL: Check if generation is already running for this context
     if (activeGenerations.has(context_id)) {
-      Logger.warn('Timeline generation already in progress', { context_id });
+      Logger.info('Timeline generation already in progress', { context_id });
       return res.status(429).json({
         error: 'Timeline generation already in progress for this context',
         type: 'user_error',
@@ -497,11 +498,12 @@ router.post('/generate', async (req: Request, res: Response) => {
       });
     }
 
-    // Run Configuration Agent with full context
-    Logger.info('Running Configuration Agent with context', {
+    // Run Timeline Generation Workflow (hierarchical tracing)
+    Logger.info('Running Timeline Generation Workflow', {
+      context_id: context.workflow?.context_id,
       confidence_threshold: confidence_threshold || 90,
     });
-    const configResult = await generateWithContext(context, confidence_threshold);
+    const configResult = await timelineGenerationWorkflow(context, confidence_threshold);
 
     if (!configResult.is_confident || !configResult.timeline) {
       // CONCURRENCY CONTROL: Clean up on failure
@@ -577,8 +579,11 @@ router.post('/generate', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    // CONCURRENCY CONTROL: Clean up on error
-    activeGenerations.delete(context_id);
+    // CONCURRENCY CONTROL: Clean up on error (context_id from req.body)
+    const { context_id } = req.body;
+    if (context_id) {
+      activeGenerations.delete(context_id);
+    }
 
     Logger.error('Failed to generate timeline', error as Error);
     return res.status(500).json({ error: 'Failed to generate timeline' });

@@ -195,7 +195,7 @@ export async function researchBlocks(
   for (const blockId of blockIds) {
     const block = blocks.find((b: any) => b.id === blockId);
     if (!block) {
-      Logger.warn('Block not found for research', { blockId });
+      Logger.info('Block not found for research', { blockId });
       continue;
     }
 

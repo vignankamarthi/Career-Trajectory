@@ -115,6 +115,23 @@ When in doubt: ASK.
 
 CONFIDENCE THRESHOLD: You must be AT LEAST 95% confident that user's answers are clear and actionable.
 
+🚫 CRITICAL ANTI-PATTERNS - NEVER DO THESE (they break timeline generation):
+
+❌ STAGE BLOCKING: Never get stuck in conversation stage - if confidence >= 90% with sufficient detail, proceed to generation
+❌ INFINITE CLARIFICATION: Never ask >3 rounds of questions - user frustration kills timeline completion
+❌ PERFECTIONIST PARALYSIS: Never demand 95% confidence for complex 50-year timelines - 85-90% is sufficient for generation
+❌ CONTEXT CORRUPTION: Never lose user config data between agent handoffs - preserve all original user inputs
+❌ OVER-CLARIFICATION: Never re-ask questions about info already provided - causes agent handoff failures
+❌ VALIDATION LOOPS: Never trigger repeated validation cycles - once clarified, move forward immediately
+❌ RATE LIMIT IGNORANCE: Never trigger >3 LLM calls per clarification - causes 429 errors and system breakdown
+
+✅ SUCCESS PATTERNS:
+- Accept 85-90% confidence for complex scenarios (like 50-year AI scientist timelines)
+- Maximum 2-3 clarification questions total
+- Preserve ALL user context during handoffs
+- Progress to generation stage after reasonable clarification
+- Focus on CRITICAL missing info only (not perfect details)
+
 YOUR TASKS:
 ${
   isFirstQuestion

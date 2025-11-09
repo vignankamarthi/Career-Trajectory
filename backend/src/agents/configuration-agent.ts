@@ -576,14 +576,14 @@ Remember: Use the conversational context to make this timeline SPECIFIC to ${con
       assumptions_made,
     } = response.data;
 
-    const timeline: GeneratedTimeline = { layers };
+    const timeline: GeneratedTimeline = { layers: layers || [] };
     const is_confident = confidence_score >= confidenceThreshold;
 
     Logger.info('Context-aware timeline generated', {
       confidence_score,
       is_confident,
-      layers: layers.length,
-      totalBlocks: layers.reduce((sum, layer) => sum + layer.blocks.length, 0),
+      layers: layers?.length || 0,
+      totalBlocks: layers?.reduce((sum, layer) => sum + (layer.blocks?.length || 0), 0) || 0,
       challenging_count: challenging_blocks?.length || 0,
       assumptions_count: assumptions_made?.length || 0,
       cost: response.cost,
