@@ -1,9 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import dotenv from 'dotenv';
+import path from 'path';
 import Logger from '../utils/logger';
 
 // Load environment variables from .env file in project root
-dotenv.config({ path: '../.env' });
+// Resolves from working directory (backend/) up to project root: backend/ -> project-root/.env
+dotenv.config({ path: path.join(process.cwd(), '../.env') });
 
 /**
  * Anthropic API client wrapper with logging and cost tracking

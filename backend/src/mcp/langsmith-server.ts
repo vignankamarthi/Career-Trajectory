@@ -15,8 +15,11 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config({ path: '../.env' });
+// Load environment variables from .env file in project root
+// Resolves from working directory up to project root
+dotenv.config({ path: path.join(process.cwd(), '../.env') });
 
 const LANGSMITH_API_KEY = process.env.LANGCHAIN_API_KEY;
 const LANGSMITH_PROJECT = process.env.LANGCHAIN_PROJECT || 'career-trajectory';

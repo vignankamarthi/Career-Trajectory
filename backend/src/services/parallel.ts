@@ -1,8 +1,11 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import path from 'path';
 import Logger from '../utils/logger';
 
-dotenv.config({ path: '../.env' });
+// Load environment variables from .env file in project root
+// Resolves from working directory (backend/) up to project root: backend/ -> project-root/.env
+dotenv.config({ path: path.join(process.cwd(), '../.env') });
 
 /**
  * Parallel AI API client wrapper with logging and cost tracking

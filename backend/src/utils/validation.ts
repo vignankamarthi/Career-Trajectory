@@ -58,9 +58,9 @@ export const BlockSchema = z.object({
   { message: 'Duration must match age range' }
 ).refine(
   (data) => {
-    // Layer 1: 4-10 years
+    // Layer 1: 4-20 years
     if (data.layer_number === 1) {
-      return data.duration_years >= 4.0 && data.duration_years <= 10.0;
+      return data.duration_years >= 4.0 && data.duration_years <= 20.0;
     }
     // Layer 2: 0-5 years
     if (data.layer_number === 2) {

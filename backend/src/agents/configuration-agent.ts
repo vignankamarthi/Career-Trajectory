@@ -1,4 +1,4 @@
-import { sendMessage, extractTimelineJSON } from '../services/anthropic';
+import { sendMessage, sendMessageJSON, extractTimelineJSON } from '../services/anthropic';
 import Logger from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { tracedConfigurationAgent } from '../utils/langsmith-tracer';
@@ -75,7 +75,7 @@ export async function generateTimelineStructure(config: UserConfig): Promise<{
     const systemPrompt = `You are a career trajectory planning expert. Generate a structured timeline that helps the user achieve their goal.
 
 CRITICAL HARD BOUNDS - MUST BE ENFORCED:
-1. Layer 1 blocks: MUST be between 4.0 and 10.0 years
+1. Layer 1 blocks: MUST be between 4.0 and 20.0 years
 2. Layer 2 blocks: MUST be between 0.0 and 5.0 years
 3. Layer 3 blocks: MUST be between 0.0 and 1.0 years
 4. Timeline: Start at age ${config.start_age}, end at age ${config.end_age}
@@ -308,8 +308,8 @@ function validateTimeline(timeline: GeneratedTimeline, config: UserConfig): void
 
       // Check layer-specific duration bounds
       if (layer.layer_number === 1) {
-        if (block.duration_years < 4.0 || block.duration_years > 10.0) {
-          errors.push(`${blockPrefix}: duration ${block.duration_years} violates Layer 1 bounds (4-10 years)`);
+        if (block.duration_years < 4.0 || block.duration_years > 20.0) {
+          errors.push(`${blockPrefix}: duration ${block.duration_years} violates Layer 1 bounds (4-20 years)`);
         }
       } else if (layer.layer_number === 2) {
         if (block.duration_years < 0.0 || block.duration_years > 5.0) {
@@ -375,39 +375,49 @@ export async function generateWithContext(
 
   const config = context.user_config;
 
-  // Hybrid approach: Request JSON output directly
-  const systemPrompt = `You are a career timeline generation expert. Create a structured ${config.num_layers}-layer career timeline for someone wanting to: "${config.end_goal}" (age ${config.start_age}-${config.end_age}).
+  // System prompt for tool-based structured output with explicit example
+  const systemPrompt = `You are a career timeline generation expert. You will receive a career goal and age range, and you must create a detailed ${config.num_layers}-layer timeline.
 
-Return your response as valid JSON with this exact structure:
+CRITICAL: You MUST call the generate_timeline tool and populate the "layers" array in the tool input. DO NOT return empty input {}.
+
+STRUCTURE REQUIREMENTS:
+- Create ${config.num_layers} layers (Layer 1, Layer 2, Layer 3)
+- All layers span from age ${config.start_age} to ${config.end_age}
+- Layer 1: Broad phases (4-20 years each block)
+- Layer 2: Medium detail (0-5 years each block)
+- Layer 3: Fine detail (0-1 years each block)
+- No gaps or overlaps between blocks in each layer
+- duration_years = end_age - start_age (exact calculation)
+
+EXAMPLE STRUCTURE (DO NOT COPY, GENERATE BASED ON USER'S GOAL):
 {
   "layers": [
     {
       "layer_number": 1,
-      "title": "Foundation Phase",
+      "title": "Career Journey Overview",
       "start_age": ${config.start_age},
       "end_age": ${config.end_age},
       "blocks": [
         {
-          "title": "Block Title",
-          "description": "Detailed description",
+          "title": "Foundation Building",
+          "description": "Build educational foundation",
           "start_age": ${config.start_age},
-          "end_age": ${config.start_age + 8},
-          "duration_years": 8
+          "end_age": ${config.start_age + 12},
+          "duration_years": 12
+        },
+        {
+          "title": "Professional Growth",
+          "description": "Develop career expertise",
+          "start_age": ${config.start_age + 12},
+          "end_age": ${config.end_age},
+          "duration_years": ${config.end_age - config.start_age - 12}
         }
       ]
     }
   ]
 }
 
-Constraints:
-- Layer 1 blocks: 4-20 years each
-- Layer 2 blocks: 0-5 years each
-- Layer 3 blocks: 0-1 years each
-- No gaps or overlaps between blocks
-- All layers span from age ${config.start_age} to ${config.end_age}
-- duration_years = end_age - start_age (must be exact)
-
-Generate a comprehensive timeline covering the entire journey from age ${config.start_age} to achieving the goal by age ${config.end_age}.`;
+IMPORTANT: This is just an example structure. Generate a REAL timeline based on the user's specific goal and create all ${config.num_layers} layers with appropriate blocks.`;
 
   // Build uploaded files context if any files were uploaded
   let uploadedFilesContext = '';
@@ -423,7 +433,12 @@ Generate a comprehensive timeline covering the entire journey from age ${config.
     });
   }
 
-  const userPrompt = `Create timeline for ${config.user_name}: "${config.end_goal}" (${config.start_age}-${config.end_age})${uploadedFilesContext ? ' Files: ' + context.uploaded_files?.map(f => f.originalname).join(', ') : ''}`;
+  const userPrompt = `Create a ${config.num_layers}-layer career timeline for ${config.user_name}.
+
+GOAL: ${config.end_goal}
+AGE RANGE: ${config.start_age} to ${config.end_age} years old${uploadedFilesContext}
+
+Call the generate_timeline tool with a "layers" array containing ${config.num_layers} layer objects. Each layer must have appropriate blocks that guide the user from age ${config.start_age} to age ${config.end_age} to achieve their goal.`;
 
   // Define JSON schema for structured output (same as legacy)
   const schema = {
@@ -500,17 +515,16 @@ Generate a comprehensive timeline covering the entire journey from age ${config.
     const response = await tracedConfigurationAgent(
       config,
       async () => {
-        // Hybrid approach: Request JSON output directly
-        const llmResponse = await sendMessage(
+        // Use sendMessageJSON for guaranteed valid JSON output
+        // Tier 2 allows 90K tokens/min output, so 8K is safe (9% of limit)
+        const llmResponse = await sendMessageJSON(
           [{ role: 'user', content: userPrompt }],
-          { system: systemPrompt, maxTokens: 4096 }
+          schema,
+          { system: systemPrompt, maxTokens: 8192 }
         );
 
-        // Extract JSON from text response
-        const timelineData = extractTimelineJSON(llmResponse.content);
-
         return {
-          data: timelineData,
+          data: llmResponse.data,
           usage: llmResponse.usage,
           cost: llmResponse.cost
         };

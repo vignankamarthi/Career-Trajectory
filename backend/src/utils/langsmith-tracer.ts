@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import path from 'path';
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Load environment variables from .env file in project root
+// Resolves from working directory (backend/) up to project root: backend/ -> project-root/.env
+dotenv.config({ path: path.join(process.cwd(), '../.env') });
 
 import { traceable } from 'langsmith/traceable';
 

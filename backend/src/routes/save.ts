@@ -80,7 +80,7 @@ router.post('/lite', async (req: Request, res: Response) => {
 
 HARD BOUNDS TO CHECK:
 - Timeline: Age ${snapshot.timeline.start_age} to ${snapshot.timeline.end_age}
-- Layer 1 blocks: 4-10 years each
+- Layer 1 blocks: 4-20 years each
 - Layer 2 blocks: 0-5 years each
 - Layer 3 blocks: 0-1 years each
 

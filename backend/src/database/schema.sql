@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS blocks (
 
     -- HARD BOUNDS ENFORCEMENT
     CHECK (
-        (layer_number = 1 AND duration_years >= 4.0 AND duration_years <= 10.0) OR
+        (layer_number = 1 AND duration_years >= 4.0 AND duration_years <= 20.0) OR
         (layer_number = 2 AND duration_years >= 0.0 AND duration_years <= 5.0) OR
         (layer_number = 3 AND duration_years >= 0.0 AND duration_years <= 1.0)
     ),

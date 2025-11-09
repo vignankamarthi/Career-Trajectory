@@ -102,7 +102,7 @@ CURRENT TIMELINE STRUCTURE:
 ${layersSummary}
 
 HARD BOUNDS (enforce these in your guidance):
-- Layer 1 blocks: 4-10 years each
+- Layer 1 blocks: 4-20 years each
 - Layer 2 blocks: 0-5 years each
 - Layer 3 blocks: 0-1 years each
 - Timeline: Age ${timeline.start_age} to ${timeline.end_age}
