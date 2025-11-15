@@ -10,16 +10,16 @@
 
 ---
 
-## Production-Ready AI Career Planning Platform with Async Architecture
+## AI Career Planning Platform with Async Architecture
 
 Transform career confusion into a personalized, actionable roadmap. Built with enterprise-grade architecture, comprehensive testing, and full observability.
 
-### Why This Project Stands Out
+### Highlights
 
 - **95% Confidence Architecture**: AI agents must reach 95%+ confidence before proceeding
-- **Async Research + WebSocket**: Background research with real-time UI updates (v2.0 NEW)
-- **Visual Feedback System**: Pulsing blue dots, green glow animations, toast notifications (v2.0 NEW)
-- **Research Integration**: Optional deep research via Parallel AI (9 tiers: lite → ultra8x)
+- **Async Research + WebSocket**: Background research with real-time UI updates
+- **Visual Feedback System**: Pulsing blue dots, green glow animations, toast notifications
+- **Research Integration**: Deep research via Parallel AI (9 tiers: lite → ultra8x)
 - **Full Observability**: LangSmith tracing for every AI operation
 - **Modern UI/UX**: Beautiful dark mode, responsive design, smooth animations
 - **Comprehensive Testing**: E2E testing suite with LangSmith monitoring
@@ -31,9 +31,9 @@ Transform career confusion into a personalized, actionable roadmap. Built with e
 
 ### Multi-Layer Timeline Generation
 ```
-Layer 1: High-level phases (6-month blocks)
+Layer 1: High-level phases (6-month to 10-year blocks)
 Layer 2: Detailed milestones (monthly actions)
-Layer 3: Granular tasks (weekly objectives)
+Layer 3: Granular tasks (subjective to user)
 ```
 
 ### Conversational Configuration
@@ -44,7 +44,7 @@ Layer 3: Granular tasks (weekly objectives)
 - Automatic text extraction and context integration
 - Full conversation state persistence across page reloads
 
-### Real-Time Research Updates (v2.0 NEW)
+### Real-Time Research Updates
 - WebSocket-powered live updates (ws://localhost:3001/ws)
 - Pulsing blue dots on blocks being researched
 - Green glow animation when research completes
@@ -57,7 +57,7 @@ Layer 3: Granular tasks (weekly objectives)
 - Includes all timeline data, research, and personal notes
 - Self-contained format with usage instructions
 
-### AI-Powered Research *(Optional)*
+### Subagent Research Delegation
 - University program research
 - Career path analysis
 - Skills gap identification
@@ -66,7 +66,7 @@ Layer 3: Granular tasks (weekly objectives)
 
 ---
 
-## Architecture Overview (v2.0 - Async + WebSocket)
+## Architecture Overview
 
 ### Four-Agent System with Async Research
 
@@ -77,11 +77,11 @@ graph LR
     C --> D[Configuration Agent]
     D --> E[Timeline Generated]
 
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style C fill:#fff3e0
-    style D fill:#e8f5e8
-    style E fill:#ffebee
+    style A fill:#e1f5fe,stroke:#01579b,color:#000000
+    style B fill:#f3e5f5,stroke:#4a148c,color:#000000
+    style C fill:#fff3e0,stroke:#e65100,color:#000000
+    style D fill:#e8f5e8,stroke:#1b5e20,color:#000000
+    style E fill:#ffebee,stroke:#b71c1c,color:#000000
 ```
 
 1. **Pre-Validation Agent** - Analyzes input completeness (95% confidence threshold)
@@ -95,7 +95,7 @@ graph LR
 ### Research Sub-Agents *(Optional)*
 
 ```typescript
-// 5 Specialized Research Agents
+// 5 Specialized Research Sub-Agents
 export const UniversityResearchAgent    // University program analysis
 export const CareerPathResearchAgent    // Industry pathway research
 export const SkillsGapAnalysisAgent     // Skill requirement mapping
@@ -117,14 +117,14 @@ export const QuickResearchAgent         // Fast fact-checking
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/career-trajectory-ai.git
+git clone https://github.com/vignankamarthi/Career-Trajectory
 cd career-trajectory-ai
 
 # Backend setup
 cd backend
 npm install
 cp .env.example .env
-# Add your ANTHROPIC_API_KEY to .env
+# Add your API keys to .env
 npm run dev  # Runs on http://localhost:3001
 
 # Frontend setup (new terminal)
@@ -138,32 +138,14 @@ npm run dev  # Opens http://localhost:3000
 ```bash
 # backend/.env
 ANTHROPIC_API_KEY=your_anthropic_key_here
-PARALLEL_API_KEY=your_parallel_key_here  # Optional for research
+PARALLEL_API_KEY=your_parallel_key_here  
 LANGCHAIN_TRACING_V2=true                # Optional for observability
 LANGCHAIN_API_KEY=your_langsmith_key     # Optional for observability
 LANGCHAIN_PROJECT=career-trajectory      # Optional for observability
 ```
 
 ---
-
-## Testing & Quality
-
-### Comprehensive E2E Testing
-
-```bash
-# Run the full E2E test suite
-cd backend
-npx tsx test-e2e-comprehensive.ts
-```
-
-**Test Coverage:**
-- 5 realistic user scenarios (AI researcher, career pivot, startup founder, etc.)
-- LangSmith trace monitoring at each step
-- Confidence score validation
-- Error handling and recovery
-- Performance benchmarking
-
-### LangSmith Observability
+## LangSmith Observability (QA)
 
 Monitor all AI operations in real-time:
 - Agent decision traces
@@ -221,22 +203,28 @@ Monitor all AI operations in real-time:
 Career-Trajectory/
 ├── backend/
 │   ├── src/
-│   │   ├── agents/                   # AI agent implementations (7 agents)
-│   │   │   ├── configuration-agent.ts      # Timeline generation
-│   │   │   ├── conversational-assistant.ts # Q&A agent
-│   │   │   ├── internal-review-agent.ts    # State analysis
-│   │   │   ├── pre-validation-agent.ts     # Input validation
-│   │   │   ├── validation-agent.ts         # Timeline validation
-│   │   │   └── research-agents/            # 5 specialized research agents
+│   │   ├── agents/                   # AI agent implementations (8 agents)
+│   │   │   ├── chain-coordinator.ts        # Agent coordination (future feature)
+│   │   │   ├── configuration-agent.ts      # Timeline generation with tool calling
+│   │   │   ├── conversational-assistant.ts # Q&A agent with context
+│   │   │   ├── conversational-clarification-agent.ts # Clarification questions
+│   │   │   ├── internal-agent.ts           # Internal state review
+│   │   │   ├── pre-validation-agent.ts     # Input validation (95% threshold)
+│   │   │   ├── research-sub-agents.ts      # 5 specialized research agents
+│   │   │   └── validation-agent.ts         # Timeline validation with confidence
 │   │   ├── routes/                   # REST API endpoints (7 routes)
-│   │   │   ├── configure-with-context.ts   # Main timeline generation
-│   │   │   ├── chat.ts                     # Conversational refinement
-│   │   │   ├── save.ts                     # Timeline save/load
-│   │   │   └── ...
+│   │   │   ├── analyze.ts                  # Timeline analysis endpoint
+│   │   │   ├── blocks.ts                   # Block operations
+│   │   │   ├── chat.ts                     # POST /api/chat - Conversational Q&A
+│   │   │   ├── configure-with-context.ts   # POST /api/configure-with-context
+│   │   │   ├── save.ts                     # PUT /api/save/:id, GET /api/timelines/:id
+│   │   │   ├── test-research.ts            # Research testing endpoint
+│   │   │   └── timelines.ts                # Timeline CRUD operations
 │   │   ├── services/                 # External integrations
-│   │   │   ├── parallel-mcp.ts             # Async research service
-│   │   │   ├── anthropic.ts                # Claude API wrapper
-│   │   │   └── ...
+│   │   │   ├── anthropic.ts                # Claude API wrapper with tool calling
+│   │   │   ├── parallel-mcp.ts             # Async research service (fire-and-forget)
+│   │   │   ├── parallel.ts                 # Parallel AI integration
+│   │   │   └── tracing.ts                  # LangSmith tracing service
 │   │   ├── websocket/                # Real-time updates
 │   │   │   └── research-websocket.ts       # WebSocket server
 │   │   ├── database/                 # SQLite persistence
@@ -257,12 +245,16 @@ Career-Trajectory/
 │   ├── src/
 │   │   ├── views/                    # Main views
 │   │   │   └── TimelineView.tsx            # Timeline display & editing
-│   │   ├── components/               # Reusable UI components
-│   │   │   ├── LayerView.tsx               # Layer container
-│   │   │   ├── TimelineBlock.tsx           # Individual block
-│   │   │   ├── ChatInterface.tsx           # Q&A interface
-│   │   │   ├── ResearchNotification.tsx    # Research status
-│   │   │   └── ...
+│   │   ├── components/               # Reusable UI components (9 components)
+│   │   │   ├── BlockEditor.tsx             # Block content editor
+│   │   │   ├── ErrorModal.tsx              # Error display modal
+│   │   │   ├── GenerateConfirmationModal.tsx # Timeline generation confirmation
+│   │   │   ├── LayerView.tsx               # Layer container with drag-and-drop
+│   │   │   ├── Navigation.tsx              # App navigation bar
+│   │   │   ├── PricingModal.tsx            # Research pricing/tier selection
+│   │   │   ├── ResearchNotification.tsx    # Research status toast notifications
+│   │   │   ├── ThemeToggle.tsx             # Dark/light mode toggle
+│   │   │   └── TimelineBlock.tsx           # Individual block with inline editing
 │   │   ├── contexts/                 # React contexts
 │   │   │   ├── ThemeContext.tsx            # Dark/light mode
 │   │   │   └── ResearchTierContext.tsx     # Research tier selection
@@ -274,17 +266,14 @@ Career-Trajectory/
 │   │   └── main.tsx                  # React mount point
 │   ├── dist/                         # Production bundle
 │   └── index.html                    # Vite entry point
-├── REVIEW_DOCUMENTATION/             # Technical documentation
-│   ├── 01_HIGH_LEVEL.md                    # System architecture
-│   ├── 02_MEDIUM_LEVEL.md                  # Component reference
-│   ├── 03_LOW_LEVEL.md                     # Implementation details
-│   └── 04_EXPLORATION_GUIDE.md             # Navigation guide
-├── CURRENT_AGENT_ARCHITECTURE.md     # Async architecture docs
-├── CITATIONS_AND_CREDITS.md          # Research attribution
-├── CLAUDE.md                         # AI assistant configuration
-├── QUICKSTART.md                     # User guide
-├── CURRENT_STATE.md                  # Production status (untracked)
-└── README.md                         # This file
+├── CURRENT_AGENT_ARCHITECTURE.md     # Async architecture documentation
+├── CITATIONS_AND_CREDITS.md          # Academic attribution and bibliography
+├── QUICKSTART.md                     # User guide for end users
+├── README.md                         # This file
+├── .gitignore                        # Git ignore rules
+├── .env.example                      # Environment variables template
+├── package.json                      # Root package scripts (npm start)
+└── LICENSE                           # MIT License
 ```
 
 ---
@@ -328,7 +317,7 @@ GET /api/timelines/:id/export
 // Returns: Plain text file download (.txt format)
 ```
 
-### Research Endpoints *(Optional)*
+### Research Endpoints
 
 ```typescript
 // Block-level research
@@ -378,7 +367,7 @@ POST /api/save/:timelineId/refactor      // Deep analysis (~$0.15)
 
 ### LLM Export System
 - One-click plain text export functionality
-- Optimized format for ChatGPT, Claude, Grok, and other LLMs
+- Optimized format for ChatGPT, Claude, Gemini, and other LLMs
 - Includes complete timeline data with research results
 - Self-contained with clear usage instructions
 - Lightweight text format for easy sharing and analysis
@@ -389,89 +378,12 @@ POST /api/save/:timelineId/refactor      // Deep analysis (~$0.15)
 - Performance metrics and error tracking
 - Cost tracking and optimization insights
 
----
-
-## Deployment
-
-### Docker Setup *(Coming Soon)*
-
-```bash
-# Build and run with Docker Compose
-docker-compose up --build
-```
-
-### Cloud Deployment
-
-**Recommended Stack:**
-- **Frontend**: Vercel, Netlify
-- **Backend**: Railway, Render, DigitalOcean
-- **Database**: SQLite (dev) → PostgreSQL (prod)
-- **Monitoring**: LangSmith, DataDog
-
----
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes with proper TypeScript types
-4. Add tests for new functionality
-5. Ensure all tests pass: `npm test`
-6. Submit a pull request
-
-### Testing Guidelines
-
-- Write E2E tests for new user flows
-- Include LangSmith trace monitoring
-- Test confidence score edge cases
-- Validate error handling paths
-
----
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
 
-## Acknowledgments
-
-- **Anthropic** - For Claude Sonnet 4 and incredible AI capabilities
-- **LangChain** - For AI agent orchestration frameworks
-- **Parallel AI** - For multi-tier research capabilities
-- **LangSmith** - For AI operation observability
-
----
-
-## Support
-
-- **Email**: support@career-trajectory-ai.com
-- **Discord**: [Join our community](https://discord.gg/career-trajectory)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/career-trajectory-ai/issues)
-- **Docs**: [Full Documentation](https://docs.career-trajectory-ai.com)
-
-## Documentation
-
-### Technical Documentation
-For developers and contributors, comprehensive technical documentation is available:
-
-- **[High-Level Architecture](./REVIEW_DOCUMENTATION/01_HIGH_LEVEL.md)** - System architecture, design philosophy, data flows
-- **[Component Reference](./REVIEW_DOCUMENTATION/02_MEDIUM_LEVEL.md)** - All agents, routes, services, and components
-- **[Implementation Guide](./REVIEW_DOCUMENTATION/03_LOW_LEVEL.md)** - Code patterns, examples, security
-- **[Exploration Guide](./REVIEW_DOCUMENTATION/04_EXPLORATION_GUIDE.md)** - How to navigate and understand the codebase
-
-### Academic Citations
-This project builds upon foundational research in multi-agent systems and AI coordination. For complete academic attribution and proper citations:
 
  **[CITATIONS_AND_CREDITS.md](./CITATIONS_AND_CREDITS.md)** - Academic integrity and source attribution
 
 ---
-
-<div align="center">
-  <h3>Star this repo if you found it helpful!</h3>
-  <p><strong>Built with ❤ by developers who believe in the power of personalized AI guidance</strong></p>
-</div>
