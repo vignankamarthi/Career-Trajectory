@@ -1,4 +1,4 @@
-# Career Trajectory AI
+# Career Trajectory AI System
 
 <div align="center">
   <img src="https://img.shields.io/badge/AI-Powered-blue.svg?style=for-the-badge&logo=artificial-intelligence&logoColor=white" alt="AI Powered">
@@ -118,7 +118,7 @@ export const QuickResearchAgent         // Fast fact-checking
 ```bash
 # Clone the repository
 git clone https://github.com/vignankamarthi/Career-Trajectory
-cd career-trajectory-ai
+cd career-trajectory
 
 # Backend setup
 cd backend
@@ -266,9 +266,7 @@ Career-Trajectory/
 │   │   └── main.tsx                  # React mount point
 │   ├── dist/                         # Production bundle
 │   └── index.html                    # Vite entry point
-├── CURRENT_AGENT_ARCHITECTURE.md     # Async architecture documentation
 ├── CITATIONS_AND_CREDITS.md          # Academic attribution and bibliography
-├── QUICKSTART.md                     # User guide for end users
 ├── README.md                         # This file
 ├── .gitignore                        # Git ignore rules
 ├── .env.example                      # Environment variables template
